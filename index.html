@@ -64,6 +64,8 @@ select { appearance: none; -webkit-appearance: none; background: var(--panel) ur
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px }
 .chips button { border: 1px solid var(--line2); background: var(--paper); border-radius: 999px; padding: 6px 12px; font-size: 15px; cursor: pointer }
 .chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700 }
+.chips.sub { padding-top: 0 }
+.chips.sub button { border-radius: 8px; padding: 5px 12px; font-size: 14px; background: transparent }
 .qlist { list-style: none; margin: 0; padding: 0 12px 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px }
 .qlist button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 10px 12px; border-radius: 10px; cursor: pointer; background: var(--paper); border: 1px solid var(--line); font-size: 15px; line-height: 1.45 }
 .qlist button:hover { border-color: var(--line2) }
@@ -186,6 +188,7 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
   <nav class="qcol" aria-label="Questions">
     <h2>Questions</h2>
     <div class="chips" id="chips"></div>
+    <div class="chips sub" id="subchips" hidden></div>
     <ol class="qlist" id="qlist"></ol>
   </nav>
   <section class="board" aria-label="Drawing">
@@ -1910,8 +1913,10 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
   function fillList(mod) {
     const M = MODULES.find(M => M.parts.some(p => p.id === mod));
     [...$('chips').children].forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === M.n)));
+    const sc = $('subchips'); sc.innerHTML = ''; sc.hidden = M.parts.length < 2;
+    if (M.parts.length > 1) M.parts.forEach(p => { const b = document.createElement('button'); b.type = 'button'; b.textContent = p.name; b.setAttribute('aria-pressed', String(p.id === mod)); b.addEventListener('click', () => openQ(QS.find(q => q.mod === p.id))); sc.appendChild(b); });
     const ol = $('qlist'); ol.innerHTML = '';
-    M.parts.forEach(part => {
+    M.parts.filter(p => p.id === mod).forEach(part => {
     const h = document.createElement('li'); h.className = 'sec'; h.textContent = part.full; ol.appendChild(h);
     QS.filter(q => q.mod === part.id).forEach(q => {
       const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button';
