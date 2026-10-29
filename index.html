@@ -58,7 +58,21 @@ select { appearance: none; -webkit-appearance: none; background: var(--panel) ur
 .qnav button:disabled { opacity: .35; cursor: default }
 
 /* main */
-.main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 400px }
+.main { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr) 340px }
+.qcol { min-width: 0; min-height: 0; display: flex; flex-direction: column; border-right: 1px solid var(--line); background: var(--bg) }
+.qcol h2 { margin: 0; padding: 14px 16px 8px; font-size: 15px; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px }
+.chips button { border: 1px solid var(--line2); background: var(--paper); border-radius: 999px; padding: 6px 12px; font-size: 15px; cursor: pointer }
+.chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700 }
+.qlist { list-style: none; margin: 0; padding: 0 12px 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px }
+.qlist button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 10px 12px; border-radius: 10px; cursor: pointer; background: var(--paper); border: 1px solid var(--line); font-size: 15px; line-height: 1.45 }
+.qlist button:hover { border-color: var(--line2) }
+.qlist button:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px }
+.qlist .qn { font-weight: 700; color: var(--accent); margin-right: 6px }
+.qlist .short { display: none }
+.qlist .full { color: var(--muted) }
+.qlist button[aria-current="true"] { border: 2px solid var(--accent); background: var(--accent-soft) }
+.qlist button[aria-current="true"] .full { color: var(--ink); font-size: 16px }
 .board { position: relative; min-width: 0; min-height: 0; background: var(--paper); display: flex; flex-direction: column }
 #drawWrap { flex: 1; min-height: 0; overflow: auto; padding: 14px; display: flex }
 #draw { margin: auto }
@@ -121,6 +135,14 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
 .ctl .small { min-height: 46px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line2); background: var(--panel); cursor: pointer; font-weight: 700; font-size: 16px; white-space: nowrap }
 .ctl .count { font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap }
 
+@media (min-width: 1100px) {
+  #qcard, .pick, .qnav { display: none }
+  .top { min-height: 56px }
+}
+@media (max-width: 1099px) {
+  .main { grid-template-columns: minmax(0, 1fr) 360px }
+  .qcol { display: none }
+}
 @media (max-width: 999px) {
   body { overflow: auto; height: auto; min-height: 100% }
   html { height: auto }
@@ -159,6 +181,11 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
 </header>
 
 <div class="main">
+  <nav class="qcol" aria-label="Questions">
+    <h2>Questions</h2>
+    <div class="chips" id="chips"></div>
+    <ol class="qlist" id="qlist"></ol>
+  </nav>
   <section class="board" aria-label="Drawing">
     <div class="zoom">
       <button id="zin" type="button" aria-label="Zoom in">+</button>
@@ -1876,6 +1903,18 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     const sel = $('qsel'); sel.innerHTML = '';
     QS.filter(q => q.mod === mod).forEach(q => { const o = document.createElement('option'); o.value = q.id; o.textContent = 'Q' + q.num + ' · ' + q.title; sel.appendChild(o); });
   }
+  MODS.forEach(m => { const b = document.createElement('button'); b.type = 'button'; b.textContent = m.name; b.dataset.m = m.id; b.addEventListener('click', () => openQ(QS.find(q => q.mod === m.id))); $('chips').appendChild(b); });
+  function fillList(mod) {
+    [...$('chips').children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === mod)));
+    const ol = $('qlist'); ol.innerHTML = '';
+    QS.filter(q => q.mod === mod).forEach(q => {
+      const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button';
+      b.innerHTML = '<span class="qn">Q' + q.num + '</span><span class="short">' + esc(q.title) + '</span><span class="full">' + esc(q.text) + '</span>';
+      if (curQ && q.id === curQ.id) b.setAttribute('aria-current', 'true');
+      b.addEventListener('click', () => openQ(q)); li.appendChild(b); ol.appendChild(li);
+    });
+    const cur = ol.querySelector('[aria-current="true"]'); if (cur) cur.scrollIntoView({ block: 'nearest' });
+  }
   $('topic').addEventListener('change', e => { fillQs(e.target.value); openQ(QS.find(q => q.mod === e.target.value)); });
   $('qsel').addEventListener('change', e => openQ(QS.find(q => q.id === e.target.value)));
   $('qprev').addEventListener('click', () => { const i = QS.indexOf(curQ); if (i > 0) openQ(QS[i - 1]); });
@@ -1889,7 +1928,7 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     if (!q) return; stop();
     curQ = q; fig = getFig(q); step = 0; zoom = baseZoom();
     if ($('topic').value !== q.mod) { $('topic').value = q.mod; }
-    fillQs(q.mod); $('qsel').value = q.id;
+    fillQs(q.mod); $('qsel').value = q.id; fillList(q.mod);
     const i = QS.indexOf(q); $('qprev').disabled = i === 0; $('qnext').disabled = i === QS.length - 1;
     $('eyebrow').textContent = modOf(q.mod).full + ' · Q' + q.num;
     $('qtext').textContent = q.text;
