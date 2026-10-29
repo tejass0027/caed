@@ -543,6 +543,14 @@ function awayDir(p, c) {
 // Move every angle mark to one final step; leave a protractor marker where an angle is set out.
 function deferAngles(F) {
   if (F._deferred) return F; F._deferred = true;
+  // tell the student how far to open the compass in every step that uses it
+  for (const st of F.steps) {
+    const rs = [];
+    for (const it of st.items) if (it.t === 'arc' && it.r > 3) { const r = it.r; if (!rs.some(q => Math.abs(q - r) < 0.05)) rs.push(r); }
+    const has = (r, c) => [r.toFixed(1), r.toFixed(2), String(Math.round(r))].some(t => { const x = String(+t).replace('.', '\\.'); return new RegExp('(?<![\\d.])' + x + '(?![\\d])').test(c) && Math.abs(+t - r) < 0.06; });
+    const miss = rs.filter(r => !has(r, st.cap));
+    if (miss.length) st.cap += (/[.!?)]$/.test(st.cap.trim()) ? ' ' : '. ') + 'Compass opening: ' + (miss.length > 1 ? miss.map(r => +r.toFixed(1) + ' mm').join(', then ') : +miss[0].toFixed(1) + ' mm') + '.';
+  }
   const angs = [], lens = [];
   for (const st of F.steps) {
     const keep = [];
