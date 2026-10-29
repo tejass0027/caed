@@ -51,7 +51,7 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--accent); o
 .pick { display: flex; gap: 8px; flex: 1; min-width: 0 }
 select { appearance: none; -webkit-appearance: none; background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23778899' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center;
   border: 1px solid var(--line2); border-radius: 10px; padding: 10px 36px 10px 12px; min-height: 46px; min-width: 0; cursor: pointer }
-#topic { flex: none; width: 170px }
+#topic { flex: none; width: 230px }
 #qsel { flex: 1; text-overflow: ellipsis }
 .qnav { display: flex; gap: 6px }
 .qnav button { width: 46px; height: 46px; border-radius: 10px; border: 1px solid var(--line2); background: var(--panel); cursor: pointer; font-size: 20px; line-height: 1 }
@@ -70,6 +70,8 @@ select { appearance: none; -webkit-appearance: none; background: var(--panel) ur
 .qlist button:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px }
 .qlist .qn { font-weight: 700; color: var(--accent); margin-right: 6px }
 .qlist .short { display: none }
+.qlist .sec { font-size: 14px; font-weight: 700; color: var(--accent); padding: 10px 4px 2px; text-transform: uppercase; letter-spacing: .04em }
+.qlist .sec:first-child { padding-top: 0 }
 .qlist .full { color: var(--muted) }
 .qlist button[aria-current="true"] { border: 2px solid var(--accent); background: var(--accent-soft) }
 .qlist button[aria-current="true"] .full { color: var(--ink); font-size: 16px }
@@ -1885,12 +1887,13 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
 
 (function () {
   const MODS = [
-    { id: 'points', name: 'Points', full: 'Projections of points' },
-    { id: 'lines', name: 'Lines', full: 'Projections of lines' },
-    { id: 'planes', name: 'Planes', full: 'Projections of planes' },
-    { id: 'solids', name: 'Solids', full: 'Projections of solids' },
-    { id: 'dev', name: 'Development', full: 'Development of surfaces' },
-    { id: 'iso', name: 'Isometric', full: 'Isometric projections' }];
+    { id: 'points', m: 2, name: 'Points', full: 'Projections of points' },
+    { id: 'lines', m: 2, name: 'Lines', full: 'Projections of lines' },
+    { id: 'planes', m: 2, name: 'Planes', full: 'Projections of planes' },
+    { id: 'solids', m: 3, name: 'Solids', full: 'Projections of solids' },
+    { id: 'dev', m: 4, name: 'Development', full: 'Development of lateral surfaces' },
+    { id: 'iso', m: 5, name: 'Isometric', full: 'Isometric projections' }];
+  const MODULES = [2, 3, 4, 5].map(n => ({ n, parts: MODS.filter(x => x.m === n) }));
   const $ = id => document.getElementById(id);
   const modOf = id => MODS.find(m => m.id === id);
   const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
@@ -1898,20 +1901,24 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
   const getFig = q => { if (!cache.has(q.id)) cache.set(q.id, deferAngles(q.build())); return cache.get(q.id); };
   let curQ = null, fig = null, step = 0, timer = null, zoom = 1;
 
-  MODS.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.name + ' (' + QS.filter(q => q.mod === m.id).length + ')'; $('topic').appendChild(o); });
+  MODULES.forEach(M => { const g = document.createElement('optgroup'); g.label = 'Module ' + M.n; M.parts.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = 'Module ' + M.n + ' · ' + m.name; g.appendChild(o); }); $('topic').appendChild(g); });
   function fillQs(mod) {
     const sel = $('qsel'); sel.innerHTML = '';
     QS.filter(q => q.mod === mod).forEach(q => { const o = document.createElement('option'); o.value = q.id; o.textContent = 'Q' + q.num + ' · ' + q.title; sel.appendChild(o); });
   }
-  MODS.forEach(m => { const b = document.createElement('button'); b.type = 'button'; b.textContent = m.name; b.dataset.m = m.id; b.addEventListener('click', () => openQ(QS.find(q => q.mod === m.id))); $('chips').appendChild(b); });
+  MODULES.forEach(M => { const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Module ' + M.n; b.dataset.n = M.n; b.addEventListener('click', () => openQ(QS.find(q => q.mod === M.parts[0].id))); $('chips').appendChild(b); });
   function fillList(mod) {
-    [...$('chips').children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === mod)));
+    const M = MODULES.find(M => M.parts.some(p => p.id === mod));
+    [...$('chips').children].forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === M.n)));
     const ol = $('qlist'); ol.innerHTML = '';
-    QS.filter(q => q.mod === mod).forEach(q => {
+    M.parts.forEach(part => {
+    const h = document.createElement('li'); h.className = 'sec'; h.textContent = part.full; ol.appendChild(h);
+    QS.filter(q => q.mod === part.id).forEach(q => {
       const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button';
       b.innerHTML = '<span class="qn">Q' + q.num + '</span><span class="short">' + esc(q.title) + '</span><span class="full">' + esc(q.text) + '</span>';
       if (curQ && q.id === curQ.id) b.setAttribute('aria-current', 'true');
       b.addEventListener('click', () => openQ(q)); li.appendChild(b); ol.appendChild(li);
+    });
     });
     const cur = ol.querySelector('[aria-current="true"]'); if (cur) cur.scrollIntoView({ block: 'nearest' });
   }
@@ -1930,7 +1937,7 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     if ($('topic').value !== q.mod) { $('topic').value = q.mod; }
     fillQs(q.mod); $('qsel').value = q.id; fillList(q.mod);
     const i = QS.indexOf(q); $('qprev').disabled = i === 0; $('qnext').disabled = i === QS.length - 1;
-    $('eyebrow').textContent = modOf(q.mod).full + ' · Q' + q.num;
+    $('eyebrow').textContent = 'Module ' + modOf(q.mod).m + ' · ' + modOf(q.mod).full + ' · Q' + q.num;
     $('qtext').textContent = q.text;
     $('qcard').classList.add('clamp'); $('qmore').textContent = 'Show full question';
     $('answer').innerHTML = fig.answer ? (fig.answer.startsWith('<table') ? fig.answer : '<div class="ansplain">' + fig.answer + '</div>') : '';
