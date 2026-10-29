@@ -1330,6 +1330,24 @@ function faceNormals(M, V) {
   });
 }
 
+// ---- copy a view corner by corner with the compass (two arcs per corner) ----
+function compassCopy(F, o) {
+  const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.06;
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const cutA = (c, t, r) => { const a = atan2d(t[1] - c[1], t[0] - c[0]); F.Arc(c, r, a - 14, a + 14, 'c'); };
+  const seen = []; let k = 0;
+  o.items.forEach(it => {
+    if (near(it.p, o.A.p) || near(it.p, o.B.p)) return;
+    if (seen.some(z => near(z.p, it.p) && near(z.o, it.o))) return;
+    seen.push(it);
+    const r1 = dist(it.o, o.A.o), r2 = dist(it.o, o.B.o);
+    if (r1 < 0.06 || r2 < 0.06) return;
+    F.step((k++ === 0 ? o.intro + ' ' : '') + `Corner ${it.lab}: set the compass to the distance ${o.A.name}–${it.lab} in the ${o.from} (${f1(r1)} mm) and draw an arc from ${o.A.name}; then set it to ${o.B.name}–${it.lab} (${f1(r2)} mm) and draw an arc from ${o.B.name}. The arcs cross at ${it.lab}.`);
+    cutA(o.A.p, it.p, r1); cutA(o.B.p, it.p, r2);
+    F.Lab(it.p, it.lab, awayDir(it.p, o.cen), o.sty);
+  });
+}
+
 function solidFig(cfg) {
   const F = new Fig();
   const M = solidModel(cfg.kind, cfg.n, cfg.s, cfg.H, cfg.rest);
@@ -1417,15 +1435,28 @@ function solidFig(cfg) {
   const solidName = cfg.name;
   F.step(`Read the question: the axis is inclined to ${cfg.ref === 'edge' || cfg.rest.startsWith('slant') ? 'HP (and the solid is turned in plan)' : 'both HP and VP'}, so the ${solidName} is drawn in THREE stages. Draw XY.`).XY(-34, xEnd, 'VP', 'HP');
   const restDesc = cfg.rest === 'edge' || cfg.rest === 'slantFace' ? `a base edge (${restName}) perpendicular to XY on the RIGHT` : `a base corner (${restName}) on the RIGHT, with the two base edges through it symmetric about a horizontal line (equal inclinations)`;
-  F.step(`STAGE 1 – Assume the ${solidName} stands on its base on HP with the axis vertical. The top view shows the base as its TRUE SHAPE: draw ${cfg.baseDesc} with ${restDesc}.${cfg.kind === 'pyramid' ? ' Join the corners to the centre o (the apex seen from above).' : ''}`);
-  drawSolid(V1, A1, TVp, false);
+  const s1txt = `STAGE 1 – Assume the ${solidName} stands on its base on HP with the axis vertical. The top view shows the base as its TRUE SHAPE: draw ${cfg.baseDesc} with ${restDesc}.${cfg.kind === 'pyramid' ? ' Join the corners to the centre o (the apex seen from above).' : ''}`;
+  if (!construct1(F, { rest: restEdge ? { edge: [V1[restEdge[0]].n, V1[restEdge[1]].n] } : { corner: V1[M.base[0]].n } }, M.base.map(i => V1[i]), TVp, true, s1txt, () => drawSolid(V1, A1, TVp, false))) { F.step(s1txt); drawSolid(V1, A1, TVp, false); }
   F.step(`Project the corners up and draw the stage-1 front view: ${cfg.kind === 'prism' ? `a rectangle ${cfg.H} mm high (the axis length)` : `the apex o′ ${cfg.H} mm above XY, joined to the base corners`}.`);
   for (const p of V1) if (p.z === 0) F.L(TVp(p), [p.x, 0], 'p');
   drawSolid(V1, A1, FVp, true);
   F.Dim([-22, 0], [-22, cfg.H], String(cfg.H), 0);
   // stage 2
   const pv2 = { x: pivot.x + o2, z: 0 };
-  F.step(`STAGE 2 – Tilt the ${solidName} about the resting ${restEdge ? 'edge' : 'corner'} (kept fixed on XY). Redraw the stage-1 front view so that ${tiltCap}`);
+  F.step(`STAGE 2 – Tilt the ${solidName} about the resting ${restEdge ? 'edge' : 'corner'} (kept fixed on XY, on the right). Copy the stage-1 front view to the right of it. Redraw the front view so that ${tiltCap}`);
+  {
+    const pvp = V => restEdge ? mid(FVp(V[restEdge[0]]), FVp(V[restEdge[1]])) : FVp(V[M.base[0]]);
+    const P1 = pvp(V1), P2 = pvp(V2);
+    let iB = M.base[0], dm = -1; M.base.forEach(i => { const d = Math.hypot(FVp(V1[i])[0] - P1[0], FVp(V1[i])[1] - P1[1]); if (d > dm) { dm = d; iB = i; } });
+    const B2 = FVp(V2[iB]), Lb = dm, a1 = atan2d(B2[1] - P2[1], B2[0] - P2[0]);
+    F.L([P2[0] - Lb, 0], P2, 'c');
+    F.Arc(P2, Lb, 180, a1, 'c');
+    F.L(P2, B2, 'fv');
+    if (t <= 90.5) F.Ang(P2, 13, 180 - t, 180, f1(t) + '°', { tr: 7 }); else F.Ang(P2, 13, a1, 180, f1(180 - t) + '°', { tr: 7, noTool: true });
+    const nmB = P(V1[iB].n);
+    compassCopy(F, { items: V1.map((p, i) => ({ lab: P(p.n), o: FVp(p), p: FVp(V2[i]) })), A: { o: P1, p: P2, name: 'the pivot' }, B: { o: FVp(V1[iB]), p: B2, name: nmB }, sty: 'fv', cen: centroid2(V2.map(FVp)), intro: 'Now copy the rest of the front view with the compass, corner by corner (the solid keeps its shape; only its position changes).', from: 'stage-1 front view' });
+    F.step(`Join the corners to get the stage-2 front view (hidden edges dashed).`);
+  }
   drawSolid(V2, A2, FVp, true);
   {
     // angle mark: axis with XY
@@ -1463,7 +1494,12 @@ function solidFig(cfg) {
     F.L(hc, add(hc, [32, 0]), 'c');
     F.Ang(hc, 16, Math.min(0, a), Math.max(0, a), f1(Math.abs(a)) + '°', { tr: 7 });
   }
-  F.step(`Draw the stage-3 top view as an exact COPY of the stage-2 top view, turned to this position (transfer it with a tracing or compass). Keep the same visible and hidden edges.`);
+  {
+    const oA = cfg.ref === 'edge' ? TVp(V2[restEdge[0]]) : TVp(A2[0]), oB = cfg.ref === 'edge' ? TVp(V2[restEdge[1]]) : TVp(A2[1]);
+    const nA = cfg.ref === 'edge' ? V3[restEdge[0]].n : 'o1', nB = cfg.ref === 'edge' ? V3[restEdge[1]].n : 'o';
+    compassCopy(F, { items: V3.map((p, i) => ({ lab: p.n, o: TVp(V2[i]), p: TVp(p) })), A: { o: oA, p: TVp(rA), name: nA }, B: { o: oB, p: TVp(rB), name: nB }, sty: 'tv', cen: centroid2(V3.map(TVp)), intro: 'Now copy the stage-2 top view with the compass, corner by corner (it keeps the same shape; it is only turned).', from: 'stage-2 top view' });
+    F.step(`Join the corners: the stage-3 top view is an exact copy of the stage-2 top view, turned to this position. Keep the same visible and hidden edges.`);
+  }
   drawSolid(V3, A3, TVp, false);
   F.step(`Project every corner up, and draw horizontal lines from the stage-2 front view (heights above HP do not change when the ${solidName} is turned).`);
   V3.forEach((p, i) => { F.L(TVp(p), FVp(p), 'p'); F.L(FVp(V2[i]), FVp(p), 'g'); });
@@ -1545,15 +1581,24 @@ addQ('dev', 1, 'Funnel: cylinder Ø20 + frustum to Ø80', 'Draw the development 
   return F;
 });
 
+
+// top-view circle divided into 12 parts with the compass (radius stepped round the circle)
+function circle12(F, c, r, names, join, extra) {
+  F.step(`Draw the top view: set the compass to the radius ${r} mm and draw the circle of Ø${2 * r}.`).Arc(c, r, 0, 359.5, 'tv');
+  if (extra) extra(F);
+  F.step(`Divide the circle into 12 equal parts. Keep the compass at ${r} mm (the radius) and, starting from the left end ${names[0]}, step off arcs round the circle. This marks 6 points, 60° apart.`);
+  for (let i = 0; i < 5; i++) { const a = 180 + i * 60; F.Arc(polar(c, r, a), r, a + 120 - 14, a + 120 + 14, 'c'); }
+  F.step(`Bisect the six arcs (or use the 30°–60° set square through the centre) to get the other 6 points. Name all 12 points ${names[0]}, ${names[1]}, … from the left end.${join ? ' Join each point to the centre (the apex seen from above).' : ''}`);
+  for (let i = 0; i < 12; i++) { const pt = polar(c, r, 180 + i * 30); if (join) F.L(c, pt, 'c'); F.Pt(pt, names[i], awayDir(pt, c), 'tv'); }
+}
+
 // --- generic cylinder cut by a plane ⟂ VP: zcut(x) relative to axis
 function cylDev(F, D, H, zcut, o = {}) {
   const N = 12, r = D / 2, cyTV = -(r + 12);
   const L12 = 'abcdefghjklm';
   const pts = []; for (let i = 0; i < N; i++) { const a = 180 + i * 30; pts.push({ n: L12[i], x: r * cs(a), py: r * sn(a) }); }
   // TV: paper (x, cyTV + py)
-  F.step(`Draw the top view: a circle of Ø${D}. Divide it into 12 equal parts and name the points ${L12[0]}, ${L12[1]}, … starting from the left end.`)
-    .Circ([0, cyTV], r, 'tv').L([-r - 4, cyTV], [r + 4, cyTV], 'ax').L([0, cyTV - r - 4], [0, cyTV + r + 4], 'ax');
-  pts.forEach(p => F.Pt([p.x, cyTV + p.py], p.n, awayDir([p.x, cyTV + p.py], [0, cyTV]), 'tv'));
+  circle12(F, [0, cyTV], r, L12, false, F2 => F2.L([-r - 4, cyTV], [r + 4, cyTV], 'ax').L([0, cyTV - r - 4], [0, cyTV + r + 4], 'ax'));
   F.step(`Project the points up to draw the front view: a rectangle ${D} × ${H}. Each projector is a GENERATOR (a straight line on the curved surface).`)
     .PL([[-r, 0], [r, 0], [r, H], [-r, H]], 'fv', true).XY(-r - 30, r + 20, 'VP', 'HP');
   pts.forEach(p => F.L([p.x, cyTV + p.py], [p.x, H], 'p'));
@@ -1610,8 +1655,10 @@ function prismDev(F, plan, H, zcut, o = {}) {
   const n = plan.length; const cy = o.cy ?? -40;
   const tv = plan.map(p => [p.x, cy + p.py]);
   const cx = plan.reduce((s, p) => s + p.x, 0) / n;
-  F.step(o.tvCap).PL(tv, 'tv', true);
-  plan.forEach((p, i) => F.Pt(tv[i], p.n, awayDir(tv[i], centroid2(tv)), 'tv'));
+  if (!construct1(F, { rest: { corner: plan[0].n } }, plan.map(p => ({ n: p.n, x: p.x, py: p.py })), p => [p.x, cy + p.py], true, o.tvCap, () => F.PL(tv, 'tv', true))) {
+    F.step(o.tvCap).PL(tv, 'tv', true);
+    plan.forEach((p, i) => F.Pt(tv[i], p.n, awayDir(tv[i], centroid2(tv)), 'tv'));
+  }
   if (o.tvExtra) o.tvExtra(F, tv);
   const xs = plan.map(p => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs);
   F.step(`Project up and draw the front view: ${H} mm high. Every vertical edge of the prism appears as a vertical line.`).XY(x0 - 28, x1 + 18, 'VP', 'HP');
@@ -1725,8 +1772,7 @@ addQ('dev', 3, 'Square pyramid 45 × 70 cut at 40° through axis mid-point', 'A 
   const F = new Fig(); const s = 22.5, H = 70, cy = -40;
   const corners = [{ n: 'a', x: -s, py: -s }, { n: 'b', x: s, py: -s }, { n: 'c', x: s, py: s }, { n: 'd', x: -s, py: s }];
   const TL = hyp(s, s, H); const k = tn(40);
-  F.step('Draw the top view: a 45 mm square with sides parallel to XY. Join the corners to the centre o (apex). Name the corners a, b (front) and c, d (back).');
-  F.PL(corners.map(p => [p.x, cy + p.py]), 'tv', true); corners.forEach(p => { F.L([0, cy], [p.x, cy + p.py], 'tv'); F.Pt([p.x, cy + p.py], p.n, awayDir([p.x, cy + p.py], [0, cy]), 'tv'); }); F.Pt([0, cy], 'o', 'ne', 'tv');
+  construct1(F, { rest: { corner: 'a' } }, corners.map(p => ({ n: p.n, x: p.x, py: p.py })), p => [p.x, cy + p.py], true, 'Draw the top view: a 45 mm square with sides parallel to XY, then join the corners to the centre o (the apex seen from above). Name the corners a, b (front) and c, d (back).', () => { F.PL(corners.map(p => [p.x, cy + p.py]), 'tv', true); corners.forEach(p => F.L([0, cy], [p.x, cy + p.py], 'tv')); F.Pt([0, cy], 'o', 'ne', 'tv'); });
   F.step('Draw the front view: a triangle with the apex o′ 70 mm above XY. a′ and d′ coincide (left), b′ and c′ coincide (right).').XY(-50, 40, 'VP', 'HP')
     .PL([[-s, 0], [s, 0], [0, H]], 'fv', true).Pt([0, H], P('o'), 'n', 'fv').Lab([-s, 0], "a′,d′", 'sw', 'fv').Lab([s, 0], "c′,b′", 'se', 'fv').Dim([-s - 12, 0], [-s - 12, H], '70', 0);
   corners.forEach(p => F.L([p.x, cy + p.py], [p.x, 0], 'p'));
@@ -1748,9 +1794,13 @@ addQ('dev', 3, 'Square pyramid 45 × 70 cut at 40° through axis mid-point', 'A 
   const start = 270 - 2 * ch;
   const rays = [0, 1, 2, 3, 4].map(i => start + i * ch);
   const names = ['A', 'B', 'C', 'D', 'A'];
-  F.step(`Development: with O as centre and radius = true slant length ${f2(TL)} mm draw an arc. Step off the base side 45 mm four times along it (A, B, C, D, A) and join to O. These are the four triangular faces.`)
+  F.step(`Development: with O as centre and radius = true slant length ${f2(TL)} mm draw an arc.`)
     .Arc(O, TL, rays[0] - 3, rays[4] + 3, 'c').Pt(O, 'O', 'n');
-  rays.forEach((a, i) => { F.L(O, polar(O, TL, a), 'c').Tx(polar(O, TL + 5, a), names[i], { size: 's' }); });
+  F.L(O, polar(O, TL, rays[0]), 'c').Tx(polar(O, TL + 5, rays[0]), names[0], { size: 's' });
+  F.step('Set the compass to the base side 45 mm. Starting from A, step off four arcs along the big arc to mark B, C, D and A again.');
+  for (let i = 0; i < 4; i++) { const c0 = polar(O, TL, rays[i]), c1 = polar(O, TL, rays[i + 1]); const a = atan2d(c1[1] - c0[1], c1[0] - c0[0]); F.Arc(c0, 45, a - 14, a + 14, 'c'); F.Tx(polar(O, TL + 5, rays[i + 1]), names[i + 1], { size: 's' }); }
+  F.step('Join the marked points to O, and join the neighbouring points on the arc with straight lines. These are the four triangular faces.');
+  rays.forEach((a, i) => F.L(O, polar(O, TL, a), 'c'));
   for (let i = 0; i < 4; i++) F.L(polar(O, TL, rays[i]), polar(O, TL, rays[i + 1]), 'c');
   const dist = [dL, dR, dR, dL, dL];
   F.step('Mark the true distances from O on each fold line: O1 on OA, O2 on OB, O3 on OC, O4 on OD, and O1 again on the last OA.');
@@ -1774,8 +1824,7 @@ addQ('dev', 8, 'Cone Ø50 × 60 cut as shown', 'A cone of base diameter 50 mm an
   F.note = 'The module shows the cut only in a figure. Read from it: the cut starts on the base 10 mm from the left end and meets the right extreme generator 15 mm below the apex. These values are used here.';
   const L12 = 'abcdefghjklm';
   const g = []; for (let i = 0; i < 12; i++) { const a = 180 + i * 30; g.push({ n: L12[i], a, x: r * cs(a), py: r * sn(a) }); }
-  F.step('Draw the top view: a Ø50 circle. Divide it into 12 equal parts (a, b, c, …) starting from the left end, and join each point to the centre (apex).');
-  F.Circ([0, cy], r, 'tv'); g.forEach(p => { F.L([0, cy], [p.x, cy + p.py], 'c'); F.Pt([p.x, cy + p.py], p.n, awayDir([p.x, cy + p.py], [0, cy]), 'tv'); });
+  circle12(F, [0, cy], r, L12.split(''), true);
   F.step('Draw the front view: a triangle with the apex o′ 60 mm above XY. Project each point up to the base and join it to o′ — these are the generators.').XY(-r - 25, r + 20, 'VP', 'HP')
     .PL([[-r, 0], [r, 0], [0, H]], 'fv', true).Pt([0, H], P('o'), 'n', 'fv').Dim([-r - 10, 0], [-r - 10, H], '60', 0).Dim([-r, -2], [xs, -2], '10', -5);
   g.forEach(p => { F.L([p.x, cy + p.py], [p.x, 0], 'p'); F.L([p.x, 0], [0, H], 'c'); });
@@ -1855,7 +1904,7 @@ function drawIso(F, S) {
     const h = hull2(b.concat([ap])); F.Fill(h).PL(h, 'k', true);
   } else if (S.type === 'sph') {
     const c = ISO(S.c); const pts = []; for (let i = 0; i < 96; i++) pts.push(polar(c, S.r, i * 3.75));
-    F.Fill(pts).Circ(c, S.r, 'k');
+    F.Fill(pts).Arc(c, S.r, 0, 359.5, 'k');
   } else if (S.type === 'hemi') {
     const rim = circ3(S.c[0], S.c[1], S.zr, S.r).map(ISO);
     const low = []; for (let i = 0; i < 24; i++) for (let j = 1; j <= 12; j++) { const ph = j * 7.5, a = i * 15; low.push(ISO([S.c[0] + S.r * sn(ph) * cs(a), S.c[1] + S.r * sn(ph) * sn(a), S.zr - S.r * cs(ph)])); }
