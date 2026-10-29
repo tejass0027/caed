@@ -544,7 +544,7 @@ function deferAngles(F) {
   for (const st of F.steps) {
     const keep = [];
     for (const it of st.items) {
-      if (it.t === 'ang') { angs.push(it); if (!it.noTool) keep.push(Object.assign({}, it, { t: 'angTool' })); }
+      if (it.t === 'ang') { if (it.noTool) angs.push(it); else { keep.push(Object.assign({}, it, { t: 'angTool' })); keep.push(it); } }
       else if (it.t === 'dim' && it.len) lens.push(it);
       else keep.push(it);
     }
@@ -552,7 +552,7 @@ function deferAngles(F) {
   }
   const allLens = lens.concat(F.meas || []);
   if (allLens.length) F.steps.push({ final: true, cap: 'Drawing complete. Measure the lengths and dimension them: the TRUE LENGTH (TL) on the true-length lines, and the APPARENT LENGTHS — the front view length (FV) and the top view length (TV). The apparent lengths are always shorter than the true length.', items: allLens });
-  if (angs.length) F.steps.push({ final: true, cap: 'Finally mark the angles: draw a small arc at each corner where an angle is set or found, with an arrow at each end, and write its value — true inclinations θ (HP) and φ (VP), and apparent inclinations α (front view) and β (top view).', items: angs });
+  if (angs.length) F.steps.push({ final: true, cap: 'Finally mark the angles you FOUND from the drawing: draw a small arc with an arrow at each end and write its value — true inclinations θ (HP) and φ (VP), and apparent inclinations α (front view) and β (top view).', items: angs });
   F._bb = null;
   return F;
 }
@@ -1971,7 +1971,7 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     const its = fig.steps[step].items;
     let th = '';
     if (its.some(it => it.t === 'arc' && it.r > 3)) th += '<div class="tip"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 3L5 21M12 3L19 21" stroke="var(--tool)" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="12" cy="3" r="2" fill="var(--tool)"/><path d="M19 21l-1-3" stroke="var(--pencil)" stroke-width="2.6" stroke-linecap="round"/></svg><span><b>Use a compass.</b> Put the needle on the centre point, open it to the radius, and swing the pencil.</span></div>';
-    if (its.some(it => it.t === 'angTool' && it.r > 3)) th += '<div class="tip"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 19A10 10 0 0 1 22 19Z" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="1.6"/><path d="M12 19L17 10" stroke="var(--pencil)" stroke-width="2.2" stroke-linecap="round"/></svg><span><b>Use a protractor.</b> Centre on the corner, base along XY, mark the angle, then join. (Set squares give 30°, 45° and 60°.)</span></div>';
+    if (its.some(it => it.t === 'angTool' && it.r > 3)) th += '<div class="tip"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 19A10 10 0 0 1 22 19Z" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="1.6"/><path d="M12 19L17 10" stroke="var(--pencil)" stroke-width="2.2" stroke-linecap="round"/></svg><span><b>Use a protractor.</b> Centre on the corner, base along XY, mark the angle, join, then write the angle value. (Set squares give 30°, 45° and 60°.)</span></div>';
     $('toolhint').innerHTML = th;
     [...$('slol').querySelectorAll('button')].forEach((b, j) => { if (j === step) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); b.classList.toggle('done', j < step); });
   }
