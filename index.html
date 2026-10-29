@@ -1165,7 +1165,7 @@ function lamina(cfg) {
   const pivot2 = pivotOf(st2);
   const pv2v = HPm ? FVp(pivot2) : TVp(pivot2);
   const far1 = HPm ? st1.reduce((m, p) => p.x < m.x ? p : m) : st1.reduce((m, p) => p.x < m.x ? p : m);
-  F.step(`STAGE 2 – Tilt it about the resting ${cfg.rest.edge ? 'edge' : 'corner'} (kept on XY, on the right). Copy the ${V2} line to the right and rotate it: ${tiltWhy}`);
+  F.step(`STAGE 2 – Tilt it about the resting ${cfg.rest.edge ? 'edge' : 'corner'} (kept on XY, on the right). Copy the ${V2} line to the right and rotate it: ${tiltWhy} Measure the compass opening FROM THE FIGURE: it is the length of the stage-1 ${V2} line from the pivot to its far end. Put the compass point on the pivot and swing that end up with the arc.`);
   const Lr = Math.max(...st1.map(p => -(p.x - st1.find(q => q.n === (cfg.rest.edge ? cfg.rest.edge[0] : cfg.rest.corner)).x)));
   if (cfg.tilt.h !== undefined) { F.L([pv2v[0] - Lr - 4, HPm ? cfg.tilt.h : -cfg.tilt.h], [pv2v[0] + 4, HPm ? cfg.tilt.h : -cfg.tilt.h], 'cl'); F.Dim([pv2v[0] + 6, 0], [pv2v[0] + 6, HPm ? cfg.tilt.h : -cfg.tilt.h], String(cfg.tilt.h), 0); }
   F.Arc(pv2v, Lr, 180, HPm ? 180 - t : 180 + t, 'c');
