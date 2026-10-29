@@ -350,7 +350,7 @@ function protractorGeom(it) {
   const s = baseA1 ? it.a1 - 180 : it.a0;
   return { R, s, base: baseA1 ? it.a1 : it.a0, read: baseA1 ? it.a0 : it.a1 };
 }
-function toolCompass(it, k, X, Y) {
+function toolCompass(it, k, X, Y, showLen = true) {
   const sw = compassSweep(it), r = it.r, C = it.c;
   const L = 0.62 * r, h = Math.sqrt(Math.max(L * L - r * r / 4, 0));
   const E = polar(C, r, sw.from), M = polar(C, r / 2, sw.from);
@@ -369,7 +369,16 @@ function toolCompass(it, k, X, Y) {
   const p0 = polar(C, r, sw.from), p1 = polar(C, r, sw.to);
   const large = Math.abs(sw.to - sw.from) > 180 ? 1 : 0, sweepF = sw.to > sw.from ? 0 : 1;
   const trace = `<path d="M${X(p0)} ${Y(p0)}A${r.toFixed(3)} ${r.toFixed(3)} 0 ${large} ${sweepF} ${X(p1)} ${Y(p1)}" pathLength="1" stroke="var(--pencil)" stroke-width="${(2.2 * k).toFixed(3)}" fill="none" stroke-linecap="round" stroke-dasharray="1 1"><animate attributeName="stroke-dashoffset" values="1;1;0;0" ${KT}/></path>`;
-  return `${trace}<g class="tool" opacity="0.92">${g}${anim}</g>`;
+  // static radius dimension: shows how far the compass is opened
+  let lenSvg = '';
+  if (showLen) {
+    const away = unit(sub(M, Hg)), off = mul(away, 6 * k);
+    const a0 = add(C, off), a1 = add(E, off), tk = mul(away, 2.2 * k);
+    const tp = add(M, mul(away, 15 * k)), fs = (12.5 * k).toFixed(2);
+    lenSvg = `<path d="M${X(a0)} ${Y(a0)}L${X(a1)} ${Y(a1)}M${X(sub(a0, tk))} ${Y(sub(a0, tk))}L${X(add(a0, tk))} ${Y(add(a0, tk))}M${X(sub(a1, tk))} ${Y(sub(a1, tk))}L${X(add(a1, tk))} ${Y(add(a1, tk))}" stroke="var(--pencil)" stroke-width="${(1.3 * k).toFixed(3)}" fill="none"/>`
+      + `<text x="${X(tp)}" y="${Y(tp)}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" font-weight="700" fill="var(--pencil)" stroke="var(--paper)" stroke-width="${(3.2 * k).toFixed(3)}" paint-order="stroke">r = ${+r.toFixed(1)} mm</text>`;
+  }
+  return `${trace}${lenSvg}<g class="tool" opacity="0.92">${g}${anim}</g>`;
 }
 function toolProtractor(it, k, X, Y) {
   const pr = protractorGeom(it), C = it.c, R = pr.R, Ri = R * 0.42;
@@ -507,8 +516,9 @@ function renderFig(fig, upto, widthPx, opts = {}) {
       out.push(isNew && it.t !== 'fill' ? svg.replace(/<(path|text|circle)/g, '<$1 class="' + cls + '"') : svg);
     }
     if (isNew && !opts.noTools) {
+      const seenR = new Set();
       for (const it of fig.steps[si].items) {
-        if (it.t === 'arc' && it.r > 3) tools.push(toolCompass(it, k, X, Y));
+        if (it.t === 'arc' && it.r > 3) { const rk = Math.round(it.r * 10); tools.push(toolCompass(it, k, X, Y, !seenR.has(rk))); seenR.add(rk); }
         else if (it.t === 'angTool' && it.r > 3) under.push(toolProtractor(it, k, X, Y));
       }
     }
