@@ -932,6 +932,90 @@ function circlePts(D, N = 72) {
 }
 const centroid2 = pts => { let x = 0, y = 0; pts.forEach(p => { x += p[0]; y += p[1]; }); return [x / pts.length, y / pts.length]; };
 
+// ---- Stage-1 true shape: built step by step with ruler, compass, set square (exam method) ----
+function construct1(F, cfg, st1, view, HPm, s1cap, finish) {
+  const V = {}; st1.forEach(p => { if (p.n) V[p.n] = view(p); });
+  const ring = st1.map(p => p.n).filter(n => n);
+  const k = ring.length, sty = HPm ? 'tv' : 'fv', nm = n => HPm ? n : P(n);
+  const ang = (a, b) => atan2d(b[1] - a[1], b[0] - a[0]);
+  const Dd = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const num = x => +x.toFixed(1);
+  const cen = centroid2(st1.filter(p => p.n).map(p => view(p)));
+  const lab = (...ns) => ns.forEach(n => F.Lab(V[n], nm(n), awayDir(V[n], cen), sty));
+  const cut = (c, t, r) => { const a = ang(c, t); F.Arc(c, r ?? Dd(c, t), a - 14, a + 14, 'c'); };
+  const circle = (c, r) => F.Arc(c, r, 0, 359.5, 'c');
+  const equi = k === 3 && Math.abs(Dd(V.a, V.b) - Dd(V.b, V.c)) < 0.05 && Math.abs(Dd(V.a, V.b) - Dd(V.a, V.c)) < 0.05;
+  const kind = st1.length >= 60 ? 'circle' : k === 3 ? (equi ? 'tri' : 'setsq') : k === 4 ? (cfg.build === 'diag' ? 'sqdiag' : 'rect') : k === 5 ? 'pent' : k === 6 ? 'hex' : null;
+  if (!kind) return false;
+  let base;
+  if (cfg.rest.edge) base = cfg.rest.edge.slice();
+  else if (kind === 'tri') base = ring.filter(x => x !== cfg.rest.corner);
+  else if (kind === 'sqdiag') base = ['a', 'c'];
+  else base = [ring[0], ring[1]];
+  const [p, q] = base, ip = ring.indexOf(p), iq = ring.indexOf(q);
+  const dir = ((ip - iq + k) % k === 1) ? -1 : 1;
+  const seq = []; for (let j = 1; j < k - 1; j++) seq.push(ring[(iq + dir * j + k * 2) % k]);
+  const s = Dd(V[p], V[q]);
+  const acts = [];
+  const baseLine = () => { F.L(V[p], V[q], sty); lab(p, q); };
+  const stepOff = (from, list, r) => { let prev = from; list.forEach(nn => { cut(V[prev], V[nn], r); prev = nn; }); lab(...list); };
+  const joinAll = () => finish();
+  if (kind === 'tri') {
+    const ap = seq[0];
+    acts.push([`Using the scale, draw the base ${p}${q} = ${num(s)} mm.`, baseLine]);
+    acts.push([`Set the compass to ${num(s)} mm (the side). Put its point on ${p} and draw an arc.`, () => cut(V[p], V[ap])]);
+    acts.push([`Keep the same radius, put the point on ${q} and draw a second arc. The two arcs cross at ${ap}.`, () => { cut(V[q], V[ap]); lab(ap); }]);
+    acts.push([`Join ${p}${ap} and ${q}${ap}: the equilateral triangle is ready.`, joinAll]);
+  } else if (kind === 'rect') {
+    const r = seq[0], t = seq[1], w = Dd(V[q], V[r]);
+    acts.push([`Draw the base ${p}${q} = ${num(s)} mm with the scale.`, baseLine]);
+    acts.push([`With the set square draw lines perpendicular to ${p}${q} at ${p} and at ${q}, on the side where the shape lies.`, () => { F.L(V[p], add(V[p], mul(sub(V[t], V[p]), 1.25)), 'c'); F.L(V[q], add(V[q], mul(sub(V[r], V[q]), 1.25)), 'c'); }]);
+    acts.push([`Set the compass to ${num(w)} mm. With centre ${p} cut the perpendicular at ${t}, and with centre ${q} cut the other perpendicular at ${r}.`, () => { cut(V[p], V[t], w); cut(V[q], V[r], w); lab(t, r); }]);
+    acts.push([`Join ${t}${r}: the ${Math.abs(w - s) < 0.05 ? 'square' : 'rectangle'} is ready.`, joinAll]);
+  } else if (kind === 'sqdiag') {
+    const [b2, d2] = ring.filter(x => !base.includes(x));
+    const M = mid(V[p], V[q]), n = unit([-(V[q][1] - V[p][1]), V[q][0] - V[p][0]]), R = 0.7 * s, hh = Math.sqrt(R * R - s * s / 4);
+    acts.push([`The square is drawn from its DIAGONAL ${p}${q} (= ${num(s)} mm, which is the side × 1.414), placed as shown. Draw ${p}${q}.`, baseLine]);
+    acts.push([`Draw the perpendicular bisector of ${p}${q}: with one radius from ${p} and from ${q} draw arcs on both sides and join their crossing points. It cuts ${p}${q} at the centre O.`, () => { [1, -1].forEach(sg => { cut(V[p], add(M, mul(n, sg * hh)), R); cut(V[q], add(M, mul(n, sg * hh)), R); }); F.L(add(M, mul(n, -hh)), add(M, mul(n, hh)), 'c'); F.Pt(M, 'O', 'se', 'c'); }]);
+    acts.push([`With centre O and radius O${p}, cut the bisector at ${b2} and ${d2}.`, () => { cut(M, V[b2]); cut(M, V[d2]); lab(b2, d2); }]);
+    acts.push([`Join ${p}${b2}, ${b2}${q}, ${q}${d2} and ${d2}${p}: the square is ready.`, joinAll]);
+  } else if (kind === 'setsq') {
+    const c3 = ring.find(x => x !== p && x !== q), A = V[p], B = V[q], C = V[c3];
+    const d0 = ang(A, B), sg = Math.sign((B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]));
+    const angA = Math.round(Math.abs(((ang(A, C) - d0 + 540) % 360) - 180)), angB = Math.round(Math.abs(((ang(B, C) - ang(B, A) + 540) % 360) - 180));
+    acts.push([`Draw the longest side ${p}${q} = ${num(s)} mm.`, baseLine]);
+    acts.push([`At ${p} use the protractor (or the 60° set square) to draw a line making ${angA}° with ${p}${q}, on the side where the shape lies.`, () => { F.L(A, C, 'c'); F.Ang(A, 14, d0, d0 + sg * angA, angA + '°', { tr: 7 }); }]);
+    acts.push([`At ${q} draw a line making ${angB}° with ${q}${p}. It meets the first line at ${c3}, where the angle is 90°.`, () => { F.L(B, C, 'c'); F.Ang(B, 14, d0 + 180, d0 + 180 - sg * angB, angB + '°', { tr: 7 }); lab(c3); }]);
+    acts.push([`Darken ${p}${q}, ${q}${c3} and ${c3}${p}: the set square is ready.`, joinAll]);
+  } else if (kind === 'circle') {
+    const O = cen, r = Dd(O, V[ring[0]]), pp = V[ring[0]];
+    acts.push([`Mark the centre O. Set the compass to the radius ${num(r)} mm and draw the circle.`, () => { F.Pt(O, 'O', 'ne', 'c'); circle(O, r); }]);
+    acts.push([`Draw the diameter ${ring[0]}${ring[4]} (it cuts the circle at ${ring[0]} and ${ring[4]}) and the diameter ${ring[2]}${ring[6]} perpendicular to it.`, () => { F.L(V[ring[0]], V[ring[4]], 'c'); F.L(V[ring[2]], V[ring[6]], 'c'); lab(ring[0], ring[2], ring[4], ring[6]); }]);
+    acts.push([`With the 45° set square draw the diameters ${ring[1]}${ring[5]} and ${ring[3]}${ring[7]} through O. The circle is now divided into 8 equal parts.`, () => { F.L(V[ring[1]], V[ring[5]], 'c'); F.L(V[ring[3]], V[ring[7]], 'c'); lab(ring[1], ring[3], ring[5], ring[7]); F.Ang(O, 12, ang(O, pp), ang(O, V[ring[1]]), '45°', { tr: 6 }); }]);
+    acts.push([`Darken the circle. The points ${ring.join(', ')} are the 8 divisions.`, joinAll]);
+  } else if (kind === 'hex') {
+    const O = cen;
+    acts.push([`Draw the side ${p}${q} = ${num(s)} mm.`, baseLine]);
+    acts.push([`A hexagon’s centre is at a distance equal to its side. With radius ${num(s)} mm and centres ${p} and ${q}, draw two arcs; they cross at the centre O.`, () => { cut(V[p], O, s); cut(V[q], O, s); F.Pt(O, 'O', 'ne', 'c'); }]);
+    acts.push([`With centre O and the same radius ${num(s)} mm, draw a circle through ${p} and ${q}.`, () => circle(O, s)]);
+    acts.push([`Keep the compass at ${num(s)} mm. Starting from ${q}, step off ${seq.length} arcs round the circle to mark ${seq.join(', ')}.`, () => stepOff(q, seq, s)]);
+    acts.push([`Join the corners in order: the regular hexagon is ready.`, joinAll]);
+  } else if (kind === 'pent') {
+    const M = mid(V[p], V[q]); let n = unit([-(V[q][1] - V[p][1]), V[q][0] - V[p][0]]); if ((cen[0] - M[0]) * n[0] + (cen[1] - M[1]) * n[1] < 0) n = mul(n, -1);
+    const R = 0.8 * s, hh = Math.sqrt(R * R - s * s / 4), pt4 = add(M, mul(n, s / 2)), pt6 = add(M, mul(n, s * sn(60))), O = cen;
+    acts.push([`Draw the side ${p}${q} = ${num(s)} mm.`, baseLine]);
+    acts.push([`Draw the perpendicular bisector of ${p}${q}: with one radius from ${p} and from ${q} draw arcs on both sides, and join their crossing points.`, () => { [1, -1].forEach(sg => { cut(V[p], add(M, mul(n, sg * hh)), R); cut(V[q], add(M, mul(n, sg * hh)), R); }); F.L(add(M, mul(n, -hh)), add(M, mul(n, s * 1.05)), 'c'); }]);
+    acts.push([`At ${q} draw a perpendicular to ${p}${q} and cut it with an arc of radius ${num(s)} mm. Join ${p} to that point; the line meets the bisector at point 4.`, () => { const T = add(V[q], mul(n, s)); F.L(V[q], T, 'c'); cut(V[q], T, s); F.L(V[p], T, 'c'); F.Pt(pt4, '4', 'nw', 'c'); }]);
+    acts.push([`With radius ${num(s)} mm and centres ${p} and ${q} draw two arcs; they cross the bisector at point 6.`, () => { cut(V[p], pt6, s); cut(V[q], pt6, s); F.Pt(pt6, '6', 'nw', 'c'); }]);
+    acts.push([`Divide the distance 4–6 into two equal parts. The first division point (nearest 4) is the centre O of the pentagon.`, () => F.Pt(O, 'O', 'ne', 'c')]);
+    acts.push([`With centre O and radius O${p}, draw the circle through ${p} and ${q}.`, () => circle(O, Dd(O, V[p]))]);
+    acts.push([`Set the compass to ${num(s)} mm (the side). Starting from ${q}, step off arcs round the circle to mark ${seq.join(', ')}.`, () => stepOff(q, seq, s)]);
+    acts.push([`Join the corners in order: the regular pentagon is ready.`, joinAll]);
+  }
+  acts.forEach(([cap, fn], i) => { F.step(i === 0 ? s1cap + ' ' + cap : cap); fn(); });
+  return true;
+}
+
 function lamina(cfg) {
   const F = new Fig();
   const HPm = cfg.plane !== 'VP';
@@ -1053,7 +1137,7 @@ function lamina(cfg) {
   const s1cap = HPm
     ? `STAGE 1 – Assume the ${name} lies FLAT on HP. Its top view is the TRUE SHAPE: draw ${cfg.desc}, with the resting ${cfg.rest.edge ? 'edge ' + cfg.rest.edge.join('') + ' perpendicular to XY' : 'corner ' + cfg.rest.corner} on the RIGHT.`
     : `STAGE 1 – Assume the ${name} lies IN (parallel to) VP. Its front view is the TRUE SHAPE: draw ${cfg.desc}, with the resting ${cfg.rest.edge ? 'edge ' + cfg.rest.edge.join('') + ' vertical' : 'corner ' + cfg.rest.corner} on the RIGHT.`;
-  F.step(s1cap); drawView(st1, HPm ? TVp : FVp, HPm ? 'tv' : 'fv');
+  if (!construct1(F, cfg, st1, HPm ? TVp : FVp, HPm, s1cap, () => drawView(st1, HPm ? TVp : FVp, HPm ? 'tv' : 'fv'))) { F.step(s1cap); drawView(st1, HPm ? TVp : FVp, HPm ? 'tv' : 'fv'); }
   if (cfg.s1dims) cfg.s1dims(F, st1, HPm ? TVp : FVp);
   F.step(HPm ? 'Project every corner up to XY. Lying flat on HP, the whole lamina’s front view is a single LINE on XY.' : 'Project every corner down to XY. Lying in VP, the lamina’s top view is a single LINE on XY.');
   for (const p of named(st1)) F.L(HPm ? TVp(p) : FVp(p), [p.x, 0], 'p');
@@ -1142,7 +1226,7 @@ addLam(6, 'Rectangle 20×30 on longer edge, 45° HP, 30° VP', 'A rectangular ma
 addLam(7, 'Square kite 40 on side, 30° HP, side 45° VP', 'A square kite of 40 mm side rests on one of its sides on HP. The kite makes 30° to HP and the side on which it rests makes 45° to VP. Draw its projections.',
   { name: 'kite', shape: rectPts(40, 40), desc: 'the 40 mm square abcd', rest: { edge: ['b', 'c'] }, tilt: { deg: 30 }, s3: { ref: ['b', 'c'], deg: 45, kind: 'true', what: 'the resting side bc' } });
 addLam(8, 'Square plate, diagonal 30° HP and 45° VP', 'A square plate of 40 mm sides rests on HP such that one of the diagonals is inclined at 30° to HP and 45° to VP. Draw its projections.',
-  { name: 'plate', shape: [{ n: 'a', u: -28.284, v: 0 }, { n: 'b', u: 0, v: -28.284 }, { n: 'c', u: 28.284, v: 0 }, { n: 'd', u: 0, v: 28.284 }], desc: 'the 40 mm square with diagonal ac parallel to XY (resting on corner c)', rest: { corner: 'c' }, tilt: { deg: 30, why: 'the diagonal ac is the steepest line of the plate, so the front view line is drawn at 30° — this makes ac inclined 30° to HP.' }, s3: { ref: ['a', 'c'], deg: 45, kind: 'true', what: 'the diagonal ac' } },
+  { name: 'plate', shape: [{ n: 'a', u: -28.284, v: 0 }, { n: 'b', u: 0, v: -28.284 }, { n: 'c', u: 28.284, v: 0 }, { n: 'd', u: 0, v: 28.284 }], desc: 'the 40 mm square with diagonal ac parallel to XY (resting on corner c)', build: 'diag', rest: { corner: 'c' }, tilt: { deg: 30, why: 'the diagonal ac is the steepest line of the plate, so the front view line is drawn at 30° — this makes ac inclined 30° to HP.' }, s3: { ref: ['a', 'c'], deg: 45, kind: 'true', what: 'the diagonal ac' } },
   st => answerTable([['Apparent angle of diagonal ac in top view', f1(st.target) + '°']]), 'Module figure: β ≈ 55°.');
 addLam(9, 'Rectangle 35×20 appears square in top view', 'A rectangular lamina of side 35 mm × 20 mm rests on HP on one of its shorter edges. The lamina is rotated about the edge on which it rests till it appears as a square in the top view. The edge on which the lamina rests being parallel to both HP and VP. Draw its projections and find its inclinations to HP and VP.',
   { shape: rectPts(35, 20).map(p => ({ n: p.n, u: p.u, v: p.v })), desc: 'the 35 × 20 rectangle abcd, shorter edge bc on the right', rest: { edge: ['b', 'c'] }, tilt: { deg: acosd(20 / 35), why: 'the top view must become a 20 × 20 square, so its 35 mm length must shrink to 20 mm: draw an arc of radius 35 from the pivot and cut it with a projector 20 mm away. cos θ = 20/35 → θ = ' + f1(acosd(20 / 35)) + '°.' }, s3: { ref: ['b', 'c'], deg: 0, kind: 'true', what: 'the resting edge bc (parallel to VP → parallel to XY)', prefer: 'front' } },
