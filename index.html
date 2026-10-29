@@ -79,9 +79,9 @@ select { appearance: none; -webkit-appearance: none; background: var(--panel) ur
 #drawWrap { flex: 1; min-height: 0; overflow: auto; padding: 14px; display: flex }
 #draw { margin: auto }
 #draw .nw { animation: nw .45s ease-out }
-#draw .nw.mid { animation: nw .5s ease-out .9s both }
-#draw .nw.late { animation: nw .5s ease-out 1.9s both }
-#draw .tool-p { animation: nw .4s ease-out both }
+#draw .nw.mid { animation: nw .3s ease-out .35s both }
+#draw .nw.late { animation: nw .3s ease-out .8s both }
+#draw .tool-p { animation: nw .2s ease-out both }
 @keyframes nw { from { opacity: 0 } to { opacity: 1 } }
 @media (prefers-reduced-motion: reduce) { #draw .nw, #draw .nw.mid, #draw .nw.late { animation: none } }
 .zoom { position: absolute; right: 12px; top: 12px; display: flex; flex-direction: column; gap: 6px; z-index: 2 }
