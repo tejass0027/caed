@@ -1,0 +1,1941 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2530">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CAGE Steps">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>CAGE Step Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: drafting-sheet workbench — question index on the left, the drawing sheet (with title-block strip) on the right; stacks on phones. */
+:root {
+  --paper: #fbfcfd; --board: #e9eef2; --panel: #f4f7f9; --rule: #cfd8df; --rule2: #b7c3cc;
+  --ink: #1b2530; --muted: #5a6b79; --accent: #1f5fa6; --accent-ink: #ffffff;
+  --fv: #c4452a; --tv: #1f5fa6; --sv: #7a4fb0; --carry: #178a66; --con: #8b98a5; --tl: #5a4ec2;
+  --dim: #46606f; --angc: #9a5a10; --cut: #b23a7a; --halo: rgba(255, 190, 40, .42); --grid: rgba(31, 95, 166, .07);
+  --ok: #178a66; --warn: #9a5a10; --tool: #5d6b78; --toolfill: rgba(120, 160, 200, .16); --pencil: #e0a21a;
+  --fdisp: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --fbody: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --fmono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --fdraw: "Saira Condensed", "Arial Narrow", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #121820; --board: #0b1015; --panel: #161e27; --rule: #263240; --rule2: #33424f;
+  --ink: #e4ebf1; --muted: #93a3b1; --accent: #6fa8e6; --accent-ink: #0b1015;
+  --fv: #f0805f; --tv: #6fa8e6; --sv: #b998ea; --carry: #46c79c; --con: #6f7e8b; --tl: #a59cf2;
+  --dim: #9db4c2; --angc: #e6a95a; --cut: #e47ab2; --halo: rgba(255, 190, 40, .26); --grid: rgba(111, 168, 230, .06);
+  --ok: #46c79c; --warn: #e6a95a; --tool: #aab8c4; --toolfill: rgba(140, 180, 220, .14); --pencil: #f2c14e; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #121820; --board: #0b1015; --panel: #161e27; --rule: #263240; --rule2: #33424f;
+  --ink: #e4ebf1; --muted: #93a3b1; --accent: #6fa8e6; --accent-ink: #0b1015;
+  --fv: #f0805f; --tv: #6fa8e6; --sv: #b998ea; --carry: #46c79c; --con: #6f7e8b; --tl: #a59cf2;
+  --dim: #9db4c2; --angc: #e6a95a; --cut: #e47ab2; --halo: rgba(255, 190, 40, .26); --grid: rgba(111, 168, 230, .06);
+  --ok: #46c79c; --warn: #e6a95a; --tool: #aab8c4; --toolfill: rgba(140, 180, 220, .14); --pencil: #f2c14e; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--board); color: var(--ink); font-family: var(--fbody); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--board) }
+.wrap { max-width: 1320px; margin: 0 auto }
+header.top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; padding-block: 18px 12px; border-bottom: 1.5px solid var(--ink); margin-bottom: 18px }
+header.top h1 { font-family: var(--fdisp); font-weight: 700; font-size: 30px; letter-spacing: .02em; margin: 0; text-transform: uppercase; line-height: 1 }
+header.top .sub { color: var(--muted); font-size: 13.5px }
+header.top .count { margin-left: auto; font-family: var(--fmono); font-size: 12.5px; color: var(--muted) }
+.grid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: start }
+/* index */
+nav.index { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.mods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px }
+.mods button { font-family: var(--fdisp); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; padding: 7px 4px; border: 1px solid var(--rule2); background: var(--paper); color: var(--ink); cursor: pointer; border-radius: 2px }
+.mods button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink) }
+.mods button:focus-visible, .qlist button:focus-visible, .ctl button:focus-visible, .dots button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.search { width: 100%; padding: 8px 10px; border: 1px solid var(--rule2); background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; border-radius: 2px }
+.qlist { list-style: none; margin: 0; padding: 0; overflow-y: auto; border: 1px solid var(--rule); background: var(--paper); flex: 1; min-height: 120px }
+.qlist li + li { border-top: 1px solid var(--rule) }
+.qlist button { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 38px 1fr; gap: 6px; width: 100%; padding: 9px 10px; cursor: pointer; font-size: 13.5px; line-height: 1.35 }
+.qlist button:hover { background: var(--panel) }
+.qlist button[aria-current="true"] { background: var(--panel); box-shadow: inset 3px 0 0 var(--accent) }
+.qlist .qn { font-family: var(--fmono); font-size: 12px; color: var(--muted); padding-top: 1px }
+.qlist .mtag { font-family: var(--fmono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; display: block }
+.mobile-pick { display: none; gap: 8px }
+.mobile-pick select { flex: 1; min-width: 0; padding: 9px; font: inherit; font-size: 14px; border: 1px solid var(--rule2); background: var(--paper); color: var(--ink); border-radius: 2px }
+/* sheet */
+main.sheet { background: var(--paper); border: 1.5px solid var(--ink); min-width: 0 }
+.qhead { padding: 18px 22px 14px; border-bottom: 1px solid var(--rule) }
+.qhead .eyebrow { font-family: var(--fdisp); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: 13px; color: var(--accent) }
+.qhead p { margin: 6px 0 0; max-width: 78ch; font-size: 15.5px }
+.board { position: relative; padding: 14px; background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 20px 20px; overflow-x: auto }
+#draw { min-height: 260px }
+@media (max-width: 700px) { #draw { width: 640px } }
+#draw svg text { font-family: var(--fdraw); font-weight: 500 }
+#draw .nw { animation: nw .45s ease-out }
+#draw .nw.mid { animation: nw .5s ease-out .9s both }
+#draw .nw.late { animation: nw .5s ease-out 1.9s both }
+#draw .tool-p { animation: nw .4s ease-out both }
+@keyframes nw { from { opacity: 0 } to { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { #draw .nw, #draw .nw.mid, #draw .nw.late { animation: none } }
+.ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 16px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); background: var(--panel) }
+.ctl > button { font-family: var(--fdisp); font-weight: 600; font-size: 15px; letter-spacing: .05em; text-transform: uppercase; padding: 8px 16px; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; border-radius: 2px }
+.ctl > button.primary { background: var(--ink); color: var(--paper) }
+.ctl > button:disabled { opacity: .35; cursor: default }
+.ctl .stepno { font-family: var(--fmono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 92px }
+.dots { display: flex; gap: 3px; flex-wrap: wrap; flex: 1; min-width: 120px }
+.dots button { all: unset; width: 14px; height: 8px; background: var(--rule2); cursor: pointer; border-radius: 1px }
+.dots button.on { background: var(--muted) }
+.dots button.cur { background: var(--accent) }
+.cap { padding: 16px 22px; display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; align-items: start; min-height: 92px }
+.cap .big { font-family: var(--fdisp); font-weight: 700; font-size: 38px; line-height: .9; color: var(--accent); font-variant-numeric: tabular-nums }
+.cap .txt { font-size: 16px; max-width: 80ch; display: grid; gap: 10px }
+.tools { display: flex; flex-direction: column; gap: 6px }
+.tools:empty { display: none }
+.tchip { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--muted); border: 1px solid var(--rule2); background: var(--panel); padding: 7px 10px; border-radius: 2px }
+.tchip b { font-family: var(--fdisp); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink); font-size: 14px; white-space: nowrap }
+.tchip svg { flex: none; margin-top: 1px }
+.steplist { border-bottom: 1px solid var(--rule); padding: 14px 22px 18px; background: var(--paper) }
+.sl-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px }
+.sl-head h3 { font-family: var(--fdisp); font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: .08em; margin: 0; color: var(--muted) }
+.sl-head button { font-family: var(--fdisp); font-weight: 600; font-size: 14px; letter-spacing: .05em; text-transform: uppercase; padding: 5px 12px; border: 1px solid var(--rule2); background: var(--paper); color: var(--ink); cursor: pointer; border-radius: 2px }
+.steplist ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: s }
+.steplist li button { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; width: 100%; padding: 8px 10px; cursor: pointer; font-size: 14.5px; line-height: 1.5; border-radius: 2px }
+.steplist li button:hover { background: var(--panel) }
+.steplist li button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px }
+.steplist li button .n { font-family: var(--fdisp); font-weight: 700; font-size: 20px; color: var(--muted); line-height: 1.2; font-variant-numeric: tabular-nums }
+.steplist li button[aria-current="true"] { background: var(--panel); box-shadow: inset 3px 0 0 var(--accent) }
+.steplist li button[aria-current="true"] .n { color: var(--accent) }
+.steplist li button.done .n { color: var(--ink) }
+.lower { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); border-top: 1.5px solid var(--ink) }
+.lower > div { padding: 14px 22px 18px; min-width: 0 }
+.lower > div + div { border-left: 1px solid var(--rule) }
+.lower h3 { font-family: var(--fdisp); font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px; color: var(--muted) }
+table.ans { border-collapse: collapse; width: 100%; font-size: 14.5px }
+table.ans td { padding: 5px 0; border-bottom: 1px dashed var(--rule); vertical-align: top }
+table.ans td:last-child { text-align: right; font-family: var(--fmono); font-size: 13.5px; padding-left: 12px; white-space: nowrap }
+.module { margin-top: 10px; font-size: 13.5px; color: var(--warn); border-left: 2px solid var(--warn); padding-left: 10px }
+.note { margin-top: 10px; font-size: 13.5px; color: var(--muted); border-left: 2px solid var(--rule2); padding-left: 10px }
+.key { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 13px }
+.key span { display: flex; align-items: center; gap: 8px }
+.key svg { flex: none }
+.hint { font-size: 12.5px; color: var(--muted); margin-top: 10px }
+.empty { padding: 14px; color: var(--muted); font-size: 13.5px }
+@media (max-width: 900px) {
+  .grid { grid-template-columns: minmax(0, 1fr) }
+  nav.index { position: static; max-height: none }
+  .qlist, .search { display: none }
+  .mobile-pick { display: flex }
+  .mods { grid-template-columns: repeat(3, 1fr) }
+  .lower { grid-template-columns: minmax(0, 1fr) }
+  .lower > div + div { border-left: 0; border-top: 1px solid var(--rule) }
+  header.top .count { margin-left: 0 }
+}
+@media (max-width: 520px) {
+  .qhead, .cap, .lower > div { padding-left: 14px; padding-right: 14px }
+  .cap { grid-template-columns: 40px minmax(0, 1fr) } .cap .big { font-size: 30px }
+  .ctl > button { padding: 8px 12px }
+  .board { padding: 6px }
+  .key { grid-template-columns: 1fr }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>CAGE Step Book</h1>
+    <span class="sub">Every question from your Computer Aided Engineering Graphics module, drawn one line at a time.</span>
+    <span class="count" id="count"></span>
+  </header>
+  <div class="grid">
+    <nav class="index" aria-label="Questions">
+      <div class="mods" id="mods" role="group" aria-label="Topic"></div>
+      <input class="search" id="search" type="search" placeholder="Search questions (e.g. pentagon, 45°)" aria-label="Search questions">
+      <div class="mobile-pick"><select id="qsel" aria-label="Choose question"></select></div>
+      <ul class="qlist" id="qlist"></ul>
+    </nav>
+    <main class="sheet">
+      <div class="qhead"><div class="eyebrow" id="eyebrow"></div><p id="qtext"></p></div>
+      <div class="board"><div id="draw" aria-live="polite"></div></div>
+      <div class="ctl">
+        <button id="prev" type="button">‹ Back</button>
+        <button id="next" class="primary" type="button">Next ›</button>
+        <button id="play" type="button">Play</button>
+        <span class="stepno" id="stepno"></span>
+        <div class="dots" id="dots" aria-label="Jump to step"></div>
+        <button id="stepsBtn" type="button" aria-expanded="false" aria-controls="steplist">All steps</button>
+        <button id="all" type="button">Show all</button>
+      </div>
+      <section class="steplist" id="steplist" hidden aria-label="All steps for this question">
+        <div class="sl-head"><h3>Steps to draw it</h3><button type="button" id="slClose">Close</button></div>
+        <ol id="slol"></ol>
+      </section>
+      <div class="cap"><div class="big" id="capn">1</div><div class="txt"><div id="captxt"></div><div class="tools" id="toolhint"></div></div></div>
+      <div class="lower">
+        <div><h3>Answer</h3><div id="answer"></div><div id="module"></div><div id="note"></div></div>
+        <div><h3>How to read the drawing</h3>
+          <div class="key">
+            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--fv)" stroke-width="2.4"/></svg>Front view (′ labels)</span>
+            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--tv)" stroke-width="2.4"/></svg>Top view</span>
+            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="5 3"/></svg>Hidden edge (dashed)</span>
+            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--con)" stroke-width="1" stroke-dasharray="4 3"/></svg>Projector (vertical)</span>
+            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--carry)" stroke-width="1.2" stroke-dasharray="6 3"/></svg>Carried across stages</span>
+            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--tl)" stroke-width="1.8"/></svg>True length line</span>
+            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--con)" stroke-width="1" stroke-dasharray="12 3 2 3"/></svg>Locus / axis (chain)</span>
+            <span><svg width="34" height="16" viewBox="0 0 34 16"><path d="M17 2L10 15M17 2L24 15" stroke="var(--tool)" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M24 15l-1-3" stroke="var(--pencil)" stroke-width="2.4" stroke-linecap="round"/></svg>Compass (moves on arcs)</span>
+            <span><svg width="34" height="16" viewBox="0 0 34 16"><path d="M5 15A12 12 0 0 1 29 15Z" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="1.3"/></svg>Protractor (on angles)</span>
+          </div>
+          <div class="hint">Keys: ← → to step, Home / End for first / last step.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+// ===== Core geometry + figure model + SVG renderer =====
+const D2R = Math.PI / 180;
+const sn = d => Math.sin(d * D2R), cs = d => Math.cos(d * D2R), tn = d => Math.tan(d * D2R);
+const asind = v => Math.asin(Math.max(-1, Math.min(1, v))) / D2R;
+const acosd = v => Math.acos(Math.max(-1, Math.min(1, v))) / D2R;
+const atan2d = (y, x) => Math.atan2(y, x) / D2R;
+const hyp = (...a) => Math.sqrt(a.reduce((s, v) => s + v * v, 0));
+const f1 = v => { const r = Math.round(v * 10) / 10; return (Math.abs(r) < 1e-9 ? 0 : r).toString(); };
+const f2 = v => { const r = Math.round(v * 100) / 100; return (Math.abs(r) < 1e-9 ? 0 : r).toString(); };
+const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+const mul = (a, k) => [a[0] * k, a[1] * k];
+const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+const len = a => Math.hypot(a[0], a[1]);
+const unit = a => { const l = len(a) || 1; return [a[0] / l, a[1] / l]; };
+const polar = (c, r, a) => [c[0] + r * cs(a), c[1] + r * sn(a)];
+const P = s => s + '′';          // a -> a′
+const PP = s => s + '″';         // a -> a″
+
+class Fig {
+  constructor() { this.steps = []; this.cur = null; this.meas = []; this.answer = ''; this.module = ''; this.calc = ''; this.note = ''; }
+  step(cap) { this.cur = { cap, items: [] }; this.steps.push(this.cur); return this; }
+  _a(o) { if (!this.cur) this.step(''); this.cur.items.push(o); return this; }
+  L(a, b, s = 'k') { return this._a({ t: 'l', a, b, s }); }
+  PL(pts, s = 'k', closed = false) { return this._a({ t: 'pl', pts, s, closed }); }
+  Pt(p, lab, at = 'ne', s = 'k') { return this._a({ t: 'pt', p, lab, at, s }); }
+  Lab(p, lab, at = 'ne', s = 'k') { return this._a({ t: 'lab', p, lab, at, s }); }
+  Tx(p, text, o = {}) { return this._a(Object.assign({ t: 'tx', p, text }, o)); }
+  Arc(c, r, a0, a1, s = 'c') { let from = 'a0'; if (a1 < a0) { [a0, a1] = [a1, a0]; from = 'a1'; } return this._a({ t: 'arc', c, r, a0, a1, s, from }); }
+  Ang(c, r, a0, a1, text, o = {}) { if (a1 < a0) [a0, a1] = [a1, a0]; return this._a(Object.assign({ t: 'ang', c, r, a0, a1, text }, o)); }
+  Dim(a, b, text, off = 6) { return this._a({ t: 'dim', a, b, text, off }); }
+  DimL(a, b, text, off = 6) { return this._a({ t: 'dim', a, b, text, off, len: true }); }
+  Circ(c, r, s = 'k') { return this._a({ t: 'circ', c, r, s }); }
+  Fill(pts) { return this._a({ t: 'fill', pts }); }
+  // vertical dimension from XY (y=0) to point p, drawn at x = X, with leader from p
+  VDim(p, X, text) {
+    this.L([p[0], p[1]], [X + (X < p[0] ? -1.5 : 1.5), p[1]], 'lead');
+    return this.Dim([X, 0], [X, p[1]], text ?? f1(Math.abs(p[1])), 0);
+  }
+  // XY reference line
+  XY(x0, x1, top = 'VP', bot = 'HP', o = {}) {
+    this.L([x0, 0], [x1, 0], 'xy');
+    this.Tx([x0 - 4, 0], 'X', { anchor: 'end', size: 'l', dy: 0.35 });
+    this.Tx([x1 + 4, 0], 'Y', { anchor: 'start', size: 'l', dy: 0.35 });
+    if (top) this.Tx([x0 + 2, 2.5], top, { anchor: 'start', size: 'm' });
+    if (bot) this.Tx([x0 + 2, -2.5], bot, { anchor: 'start', size: 'm', dy: 0.8 });
+    return this;
+  }
+}
+
+// ---------- renderer ----------
+const CON_ST = new Set(['c', 'p', 'g', 'cl', 'lead']);
+const STY = {
+  k: ['--ink', 2.1], fv: ['--fv', 2.3], tv: ['--tv', 2.3], sv: ['--sv', 2.3],
+  kh: ['--ink', 1.5, [5, 3]], fvh: ['--fv', 1.6, [5, 3]], tvh: ['--tv', 1.6, [5, 3]],
+  c: ['--con', 1], p: ['--con', 0.9, [4, 3]], g: ['--carry', 1.1, [6, 3]],
+  cl: ['--con', 0.9, [12, 3, 2, 3]], tl: ['--tl', 1.7], xy: ['--ink', 1.3],
+  dim: ['--dim', 0.9], lead: ['--dim', 0.8], ax: ['--con', 0.9, [12, 3, 2, 3]],
+  thin: ['--ink', 1], cut: ['--cut', 1.8, [12, 3, 2, 3]], dev: ['--ink', 2.1]
+};
+const AT = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0], ne: [0.75, -0.75], nw: [-0.75, -0.75], se: [0.75, 0.85], sw: [-0.75, 0.85], c: [0, 0] };
+
+function figBBox(fig) {
+  if (fig._bb) return fig._bb;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const inc = (p, padx = 0, pady = 0) => { x0 = Math.min(x0, p[0] - padx); x1 = Math.max(x1, p[0] + padx); y0 = Math.min(y0, p[1] - pady); y1 = Math.max(y1, p[1] + pady); };
+  for (const st of fig.steps) for (const it of st.items) {
+    switch (it.t) {
+      case 'l': inc(it.a); inc(it.b); break;
+      case 'pl': case 'fill': it.pts.forEach(p => inc(p)); break;
+      case 'pt': case 'lab': inc(it.p, 7, 6); break;
+      case 'tx': { const w = String(it.text).length * (it.size === 's' ? 1.7 : 2.1); const a = it.anchor || 'middle'; inc([it.p[0] + (a === 'end' ? -w : a === 'start' ? w : 0), it.p[1]], a === 'middle' ? w / 2 : 1, 4); inc(it.p); break; }
+      case 'arc': case 'ang': for (let a = it.a0; a <= it.a1 + 1e-9; a += Math.max(1, (it.a1 - it.a0) / 12)) inc(polar(it.c, it.r, a)); if (it.t === 'ang') inc(polar(it.c, it.r + 6, (it.a0 + it.a1) / 2), 4, 3);
+        if (it.t === 'arc') { const sw = compassSweep(it); for (let a = sw.from; ; a += Math.sign(sw.to - sw.from) * 5) { inc(polar(it.c, it.r * 0.8, a + sw.hs)); if (Math.abs(a - sw.to) < 5) break; } }
+        else { const pr = protractorGeom(it); for (let a = pr.s; a <= pr.s + 180; a += 15) inc(polar(it.c, pr.R + 2, a)); }
+        break;
+      case 'dim': { const n = unit([-(it.b[1] - it.a[1]), it.b[0] - it.a[0]]); inc(add(it.a, mul(n, it.off)), 5, 5); inc(add(it.b, mul(n, it.off)), 5, 5); break; }
+      case 'circ': inc(it.c, it.r, it.r); break;
+      case 'angTool': { const pr = protractorGeom(it); for (let a = pr.s; a <= pr.s + 180; a += 15) inc(polar(it.c, pr.R + 2, a)); break; }
+    }
+  }
+  const pad = 6;
+  fig._bb = { x0: x0 - pad, y0: y0 - pad, x1: x1 + pad, y1: y1 + pad };
+  return fig._bb;
+}
+
+
+// ---- drawing-instrument overlays (compass for arcs, protractor for angles) ----
+function compassSweep(it) {
+  // which end the arc starts from: start at the end nearer the earlier construction (a0 by default)
+  const from = it.from === 'a1' ? it.a1 : it.a0, to = it.from === 'a1' ? it.a0 : it.a1;
+  const hs = to >= from ? -34 : 34;   // hinge trails behind the pencil
+  return { from, to, hs };
+}
+function protractorGeom(it) {
+  const hd = a => { const m = ((a % 180) + 180) % 180; return Math.min(m, 180 - m); };
+  const baseA1 = hd(it.a1) < hd(it.a0) - 0.01;
+  const R = Math.max(it.r * 1.6, 16);
+  const s = baseA1 ? it.a1 - 180 : it.a0;
+  return { R, s, base: baseA1 ? it.a1 : it.a0, read: baseA1 ? it.a0 : it.a1 };
+}
+function toolCompass(it, k, X, Y) {
+  const sw = compassSweep(it), r = it.r, C = it.c;
+  const L = 0.62 * r, h = Math.sqrt(Math.max(L * L - r * r / 4, 0));
+  const E = polar(C, r, sw.from), M = polar(C, r / 2, sw.from);
+  const nA = sw.from + (sw.hs < 0 ? -90 : 90);
+  const Hg = polar(M, h, nA), top = add(Hg, mul(unit(sub(Hg, M)), Math.max(0.18 * r, 4 * k)));
+  const pen = add(E, mul(unit(sub(Hg, E)), Math.min(0.2 * L, 9 * k)));
+  const w = Math.max(2.2 * k, Math.min(0.045 * r, 4 * k));
+  const rot = -(sw.to - sw.from);
+  const seg = (a, b, c, ww) => `<path d="M${X(a)} ${Y(a)}L${X(b)} ${Y(b)}" stroke="var(${c})" stroke-width="${ww.toFixed(3)}" stroke-linecap="round" fill="none"/>`;
+  let g = seg(C, Hg, '--tool', w) + seg(E, Hg, '--tool', w) + seg(Hg, top, '--tool', w * 1.6) + seg(E, pen, '--pencil', w * 1.25)
+    + `<circle cx="${X(Hg)}" cy="${Y(Hg)}" r="${(w * 1.3).toFixed(3)}" fill="var(--tool)"/><circle cx="${X(C)}" cy="${Y(C)}" r="${(w * 0.7).toFixed(3)}" fill="var(--paper)" stroke="var(--tool)" stroke-width="${(w * 0.5).toFixed(3)}"/>`;
+  const D = Math.min(3.4, 1.8 + Math.abs(rot) / 90).toFixed(2);
+  const KT = 'keyTimes="0;0.12;0.72;1" calcMode="spline" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1" dur="' + D + 's" repeatCount="indefinite"';
+  const anim = `<animateTransform attributeName="transform" type="rotate" values="0 ${X(C)} ${Y(C)};0 ${X(C)} ${Y(C)};${rot.toFixed(2)} ${X(C)} ${Y(C)};${rot.toFixed(2)} ${X(C)} ${Y(C)}" ${KT}/>`;
+  // pencil trace that grows with the swing
+  const p0 = polar(C, r, sw.from), p1 = polar(C, r, sw.to);
+  const large = Math.abs(sw.to - sw.from) > 180 ? 1 : 0, sweepF = sw.to > sw.from ? 0 : 1;
+  const trace = `<path d="M${X(p0)} ${Y(p0)}A${r.toFixed(3)} ${r.toFixed(3)} 0 ${large} ${sweepF} ${X(p1)} ${Y(p1)}" pathLength="1" stroke="var(--pencil)" stroke-width="${(2.2 * k).toFixed(3)}" fill="none" stroke-linecap="round" stroke-dasharray="1 1"><animate attributeName="stroke-dashoffset" values="1;1;0;0" ${KT}/></path>`;
+  return `${trace}<g class="tool" opacity="0.92">${g}${anim}</g>`;
+}
+function toolProtractor(it, k, X, Y) {
+  const pr = protractorGeom(it), C = it.c, R = pr.R, Ri = R * 0.42;
+  const P = a => polar(C, R, pr.s + a), Pi = a => polar(C, Ri, pr.s + a);
+  let d = `M${X(P(0))} ${Y(P(0))}A${R.toFixed(3)} ${R.toFixed(3)} 0 0 0 ${X(P(180))} ${Y(P(180))}L${X(Pi(180))} ${Y(Pi(180))}A${Ri.toFixed(3)} ${Ri.toFixed(3)} 0 0 1 ${X(Pi(0))} ${Y(Pi(0))}Z`;
+  let g = `<path d="${d}" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="${(1 * k).toFixed(3)}"/>`;
+  g += `<path d="M${X(P(0))} ${Y(P(0))}L${X(P(180))} ${Y(P(180))}" stroke="var(--tool)" stroke-width="${(1 * k).toFixed(3)}"/>`;
+  for (let a = 0; a <= 180; a += 10) {
+    const L = a % 30 === 0 ? 0.16 : 0.08;
+    const p1 = P(a), p2 = polar(C, R * (1 - L), pr.s + a);
+    g += `<path d="M${X(p1)} ${Y(p1)}L${X(p2)} ${Y(p2)}" stroke="var(--tool)" stroke-width="${(0.9 * k).toFixed(3)}"/>`;
+    if (a % 30 === 0 && R > 26 * k) { const tp = polar(C, R * 0.73, pr.s + a); g += `<text x="${X(tp)}" y="${(Y(tp) + 3 * k).toFixed(3)}" font-size="${(8.5 * k).toFixed(3)}" text-anchor="middle" fill="var(--tool)">${pr.base === pr.s ? a : 180 - a}</text>`; }
+  }
+  // centre mark and the reading line
+  const rd = polar(C, R * 1.02, pr.read);
+  g += `<circle cx="${X(C)}" cy="${Y(C)}" r="${(2 * k).toFixed(3)}" fill="none" stroke="var(--tool)" stroke-width="${(1 * k).toFixed(3)}"/>`;
+  g += `<circle cx="${X(rd)}" cy="${Y(rd)}" r="${(2.6 * k).toFixed(3)}" fill="var(--pencil)"/>`;
+  return `<g class="tool tool-p">${g}</g>`;
+}
+
+function renderFig(fig, upto, widthPx, opts = {}) {
+  const bb = figBBox(fig);
+  const W = bb.x1 - bb.x0, H = bb.y1 - bb.y0;
+  const scale = Math.min(Math.max(260, widthPx) / W, (opts.maxH || 640) / H);
+  const k = 1 / scale;          // mm per screen px
+  const X = p => +(p[0]).toFixed(3), Y = p => +(-p[1]).toFixed(3);
+  const out = [];
+  const halo = [], tools = [], under = [];
+  const sw = s => (STY[s] || STY.k);
+  const strokeAttr = (s, extra = 1) => {
+    const [c, w, d] = sw(s);
+    return `stroke="var(${c})" stroke-width="${(w * k * extra).toFixed(3)}"` + (d ? ` stroke-dasharray="${d.map(v => (v * k).toFixed(3)).join(' ')}"` : '') + ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  };
+  const arrow = (tip, dir, cls = '--dim') => {
+    const u = unit(dir), n = [-u[1], u[0]], L = 7 * k, Wd = 2.2 * k;
+    const b = sub(tip, mul(u, L));
+    const p1 = add(b, mul(n, Wd)), p2 = sub(b, mul(n, Wd));
+    return `<path d="M${X(tip)} ${Y(tip)}L${X(p1)} ${Y(p1)}L${X(p2)} ${Y(p2)}Z" fill="var(${cls})"/>`;
+  };
+  const fsz = s => (s === 's' ? 11.5 : s === 'l' ? 15 : s === 'xl' ? 17 : 13) * k;
+  const text = (p, t, o = {}) => {
+    const fs = fsz(o.size);
+    const anc = o.anchor || 'middle';
+    const col = o.color ? `var(${o.color})` : 'var(--ink)';
+    const wt = o.bold ? ' font-weight="600"' : '';
+    const rot = o.rot ? ` transform="rotate(${(-o.rot).toFixed(2)} ${X(p)} ${Y(p)})"` : '';
+    const dy = (o.dy ?? 0.35) * fs;
+    const bg = o.bg ? ` paint-order="stroke" stroke="var(--paper)" stroke-width="${(3 * k).toFixed(3)}"` : ` paint-order="stroke" stroke="var(--paper)" stroke-width="${(2.4 * k).toFixed(3)}"`;
+    return `<text x="${X(p)}" y="${(Y(p) + dy).toFixed(3)}" font-size="${fs.toFixed(3)}" text-anchor="${anc}" fill="${col}"${wt}${rot}${bg}>${esc(t)}</text>`;
+  };
+  const labelAt = (p, lab, at, s) => {
+    let d;
+    if (Array.isArray(at)) d = [at[0], -at[1]]; else d = AT[at] || AT.ne;
+    const off = 8 * k;
+    const q = [p[0] + d[0] * off, p[1] - d[1] * off];
+    const anc = Math.abs(d[0]) < 0.3 ? 'middle' : d[0] > 0 ? 'start' : 'end';
+    const dy = d[1] > 0.3 ? 0.75 : d[1] < -0.3 ? 0.1 : 0.35;
+    const col = s === 'fv' ? '--fv' : s === 'tv' ? '--tv' : s === 'sv' ? '--sv' : null;
+    return text(q, lab, { anchor: anc, dy, color: col });
+  };
+  for (let si = 0; si <= upto && si < fig.steps.length; si++) {
+    const isNew = si === upto && !opts.noHalo;
+    const mark = out.length;
+    const stepProt = isNew && !opts.noTools && fig.steps[si].items.some(i => i.t === 'angTool' && i.r > 3);
+    for (const it of fig.steps[si].items) {
+      let svg = '', hpath = '';
+      switch (it.t) {
+        case 'l': {
+          const d = `M${X(it.a)} ${Y(it.a)}L${X(it.b)} ${Y(it.b)}`;
+          svg = `<path d="${d}" ${strokeAttr(it.s)}/>`; hpath = d; break;
+        }
+        case 'pl': {
+          const d = 'M' + it.pts.map(p => `${X(p)} ${Y(p)}`).join('L') + (it.closed ? 'Z' : '');
+          svg = `<path d="${d}" ${strokeAttr(it.s)}/>`; hpath = d; break;
+        }
+        case 'fill': {
+          const d = 'M' + it.pts.map(p => `${X(p)} ${Y(p)}`).join('L') + 'Z';
+          svg = `<path data-f="1" d="${d}" fill="var(--paper)" stroke="none"/>`; break;
+        }
+        case 'circ': {
+          svg = `<circle cx="${X(it.c)}" cy="${Y(it.c)}" r="${it.r.toFixed(3)}" ${strokeAttr(it.s)}/>`;
+          hpath = `M${X([it.c[0] - it.r, it.c[1]])} ${Y(it.c)}a${it.r} ${it.r} 0 1 0 ${2 * it.r} 0a${it.r} ${it.r} 0 1 0 ${-2 * it.r} 0`; break;
+        }
+        case 'arc': case 'ang': {
+          const p0 = polar(it.c, it.r, it.a0), p1 = polar(it.c, it.r, it.a1);
+          const large = (it.a1 - it.a0) > 180 ? 1 : 0;
+          const d = `M${X(p0)} ${Y(p0)}A${it.r.toFixed(3)} ${it.r.toFixed(3)} 0 ${large} 0 ${X(p1)} ${Y(p1)}`;
+          if (it.t === 'arc') { svg = `<path d="${d}" ${strokeAttr(it.s)}/>`; hpath = d; }
+          else {
+            svg = `<path d="${d}" ${strokeAttr('dim')} stroke="var(--angc)"/>`;
+            if (it.r > 9 * k && (it.a1 - it.a0) > 6) {
+              svg += arrow(p0, [sn(it.a0), -cs(it.a0)], '--angc') + arrow(p1, [-sn(it.a1), cs(it.a1)], '--angc');
+            }
+            const am = (it.a0 + it.a1) / 2;
+            const tp = polar(it.c, it.r + (it.tr ?? 9 * k), it.tangle ?? am);
+            svg += text(tp, it.text, { size: 's', color: '--angc', anchor: 'middle' });
+            hpath = d;
+          }
+          break;
+        }
+        case 'dim': {
+          const dir = unit(sub(it.b, it.a)), n = [-dir[1], dir[0]];
+          const A2 = add(it.a, mul(n, it.off)), B2 = add(it.b, mul(n, it.off));
+          const sg = Math.sign(it.off) || 1;
+          if (Math.abs(it.off) > 0.5) {
+            const e1 = add(it.a, mul(n, sg * 1.2)), e2 = add(A2, mul(n, sg * 2));
+            const e3 = add(it.b, mul(n, sg * 1.2)), e4 = add(B2, mul(n, sg * 2));
+            svg += `<path d="M${X(e1)} ${Y(e1)}L${X(e2)} ${Y(e2)}M${X(e3)} ${Y(e3)}L${X(e4)} ${Y(e4)}" ${strokeAttr('dim')}/>`;
+          }
+          svg += `<path d="M${X(A2)} ${Y(A2)}L${X(B2)} ${Y(B2)}" ${strokeAttr('dim')}/>`;
+          svg += arrow(A2, mul(dir, -1)) + arrow(B2, dir);
+          let ang = atan2d(dir[1], dir[0]);
+          if (ang > 90.01) ang -= 180; if (ang < -89.99) ang += 180;
+          const tn_ = [-sn(ang), cs(ang)];
+          const tp = add(mid(A2, B2), mul(tn_, 5 * k));
+          svg += text(tp, it.text, { size: 's', color: '--dim', rot: ang, dy: 0.1 });
+          break;
+        }
+        case 'pt': {
+          const col = it.s === 'fv' ? '--fv' : it.s === 'tv' ? '--tv' : it.s === 'sv' ? '--sv' : '--ink';
+          svg = `<circle cx="${X(it.p)}" cy="${Y(it.p)}" r="${(2.6 * k).toFixed(3)}" fill="var(${col})"/>`;
+          if (it.lab) svg += labelAt(it.p, it.lab, it.at, it.s);
+          break;
+        }
+        case 'lab': svg = labelAt(it.p, it.lab, it.at, it.s); break;
+        case 'tx': svg = text(it.p, it.text, it); break;
+      }
+      if (isNew && hpath) halo.push(`<path d="${hpath}" stroke="var(--halo)" stroke-width="${(7 * k).toFixed(3)}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`);
+      if (isNew && (it.t === 'pt')) halo.push(`<circle cx="${X(it.p)}" cy="${Y(it.p)}" r="${(7 * k).toFixed(3)}" fill="var(--halo)"/>`);
+      let cls = 'nw';
+      if (isNew && stepProt) cls = (it.t === 'ang') ? 'nw late' : (it.t === 'l' || it.t === 'pl' || it.t === 'pt' || it.t === 'dim') ? 'nw mid' : 'nw';
+      const isCon = (it.t === 'l' || it.t === 'pl' || it.t === 'arc' || it.t === 'circ') && CON_ST.has(it.s);
+      if (isCon && opts.hideCon) continue;
+      if (isCon && opts.fadeCon) svg = '<g opacity="0.22">' + svg + '</g>';
+      out.push(isNew && it.t !== 'fill' ? svg.replace(/<(path|text|circle)/g, '<$1 class="' + cls + '"') : svg);
+    }
+    if (isNew && !opts.noTools) {
+      for (const it of fig.steps[si].items) {
+        if (it.t === 'arc' && it.r > 3) tools.push(toolCompass(it, k, X, Y));
+        else if (it.t === 'angTool' && it.r > 3) under.push(toolProtractor(it, k, X, Y));
+      }
+    }
+  }
+  return `<svg viewBox="${bb.x0.toFixed(2)} ${(-bb.y1).toFixed(2)} ${W.toFixed(2)} ${H.toFixed(2)}" width="100%" style="display:block;max-height:${opts.maxH || 640}px" role="img" font-family="var(--fdraw)"><g>${under.join('')}</g><g>${out.join('')}</g><g>${tools.join('')}</g></svg>`;
+}
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+// cluster points in a view and make module-style labels: visible first, rest in brackets
+function clusterLabels(pts, tol = 0.6) {
+  // pts: [{p:[x,y], lab, depth}]  depth larger = nearer viewer
+  const used = new Array(pts.length).fill(false), out = [];
+  for (let i = 0; i < pts.length; i++) {
+    if (used[i]) continue;
+    const grp = [pts[i]]; used[i] = true;
+    for (let j = i + 1; j < pts.length; j++) if (!used[j] && Math.hypot(pts[i].p[0] - pts[j].p[0], pts[i].p[1] - pts[j].p[1]) < tol) { grp.push(pts[j]); used[j] = true; }
+    grp.sort((a, b) => b.depth - a.depth);
+    const top = grp[0];
+    const lab = top.lab + grp.slice(1).map(g => '(' + g.lab + ')').join('');
+    out.push({ p: top.p, lab, members: grp });
+  }
+  return out;
+}
+// direction for label: away from centroid
+function awayDir(p, c) {
+  const d = sub(p, c); const l = len(d);
+  if (l < 1e-6) return [0.7, 0.7];
+  return [d[0] / l, d[1] / l];
+}
+
+// Move every angle mark to one final step; leave a protractor marker where an angle is set out.
+function deferAngles(F) {
+  if (F._deferred) return F; F._deferred = true;
+  const angs = [], lens = [];
+  for (const st of F.steps) {
+    const keep = [];
+    for (const it of st.items) {
+      if (it.t === 'ang') { angs.push(it); if (!it.noTool) keep.push(Object.assign({}, it, { t: 'angTool' })); }
+      else if (it.t === 'dim' && it.len) lens.push(it);
+      else keep.push(it);
+    }
+    st.items = keep;
+  }
+  const allLens = lens.concat(F.meas || []);
+  if (allLens.length) F.steps.push({ final: true, cap: 'Drawing complete. Measure the lengths and dimension them: the TRUE LENGTH (TL) on the true-length lines, and the APPARENT LENGTHS — the front view length (FV) and the top view length (TV). The apparent lengths are always shorter than the true length.', items: allLens });
+  if (angs.length) F.steps.push({ final: true, cap: 'Finally mark the angles: draw a small arc at each corner where an angle is set or found, with an arrow at each end, and write its value — true inclinations θ (HP) and φ (VP), and apparent inclinations α (front view) and β (top view).', items: angs });
+  F._bb = null;
+  return F;
+}
+
+// ===== Module 2A: Projections of points =====
+const QS = [];
+function addQ(mod, num, title, text, build) { QS.push({ mod, num, title, text, build, id: mod + '-' + num }); }
+
+function quadrant(h, d) {
+  if (h === 0 && d === 0) return 'I, II, III and IV quadrants (it lies on the XY line)';
+  if (h > 0 && d === 0) return 'I as well as II quadrant (it lies on VP, above HP)';
+  if (h < 0 && d === 0) return 'III as well as IV quadrant (it lies on VP, below HP)';
+  if (h === 0 && d > 0) return 'I as well as IV quadrant (it lies on HP, in front of VP)';
+  if (h === 0 && d < 0) return 'II as well as III quadrant (it lies on HP, behind VP)';
+  if (h > 0 && d > 0) return 'First (I) quadrant';
+  if (h > 0 && d < 0) return 'Second (II) quadrant';
+  if (h < 0 && d < 0) return 'Third (III) quadrant';
+  return 'Fourth (IV) quadrant';
+}
+const hWord = (h, n = 'A') => h > 0 ? `${n} is ${h} mm above HP` : h < 0 ? `${n} is ${-h} mm below HP` : `${n} is in HP`;
+const dWord = (d, n = 'A') => d > 0 ? `${n} is ${d} mm in front of VP` : d < 0 ? `${n} is ${-d} mm behind VP` : `${n} is in VP`;
+
+// draw one point with steps. F = Fig; pt = {n, h, d, x}
+function pointSteps(F, pt, o = {}) {
+  const { n, h, d, x } = pt;
+  const fv = [x, h], tv = [x, -d];
+  const lo = Math.min(0, h, -d), hi = Math.max(0, h, -d);
+  F.step(`Draw a thin vertical projector for point ${n.toUpperCase()}. Both views of a point always lie on the same projector.`)
+    .L([x, lo - 4], [x, hi + 4], 'p');
+  const sameSide = (h > 0 && -d > 0) || (h < 0 && -d < 0);
+  const dxF = sameSide && Math.abs(h) < Math.abs(d) ? -7 : -12;
+  const dxT = sameSide && Math.abs(h) < Math.abs(d) ? -13 : (sameSide ? -7 : -12);
+  let cap = hWord(h, n.toUpperCase()) + '. ';
+  cap += h > 0 ? `Height is shown in the front view, so mark ${P(n)} ${h} mm ABOVE XY.` : h < 0 ? `So mark ${P(n)} ${-h} mm BELOW XY.` : `So ${P(n)} lies ON the XY line.`;
+  F.step(cap).Pt(fv, P(n), o.atF || (h >= 0 ? 'e' : 'e'), 'fv');
+  if (h !== 0) F.VDim(fv, x + dxF);
+  cap = dWord(d, n.toUpperCase()) + '. ';
+  cap += d > 0 ? `Distance from VP is shown in the top view; in front of VP means BELOW XY, so mark ${n} ${d} mm below XY.` : d < 0 ? `Behind VP means the top view goes ABOVE XY (HP's back half folds up), so mark ${n} ${-d} mm above XY.` : `So the top view ${n} lies ON the XY line.`;
+  F.step(cap).Pt(tv, n, o.atT || (d === 0 && h === 0 ? 's' : 'e'), 'tv');
+  if (d !== 0) F.VDim(tv, x + dxT);
+}
+
+function simplePointQ(num, text, h, d) {
+  addQ('points', num, text.split('.')[0].slice(0, 70), text, () => {
+    const F = new Fig();
+    const top = d < 0 && h >= 0 || (h === 0 && d === 0) ? (d < 0 || h < 0 ? 'VP(HP)' : 'VP') : (h < 0 && d < 0 ? 'HP' : 'VP');
+    let tl = 'VP', bl = 'HP';
+    if (h > 0 && d < 0) { tl = 'VP(HP)'; bl = ''; }
+    else if (h < 0 && d > 0) { tl = ''; bl = 'VP(HP)'; }
+    else if (h < 0 && d < 0) { tl = 'HP'; bl = 'VP'; }
+    else if (h === 0 && d < 0) { tl = 'VP(HP)'; bl = ''; }
+    else if (h < 0 && d === 0) { tl = ''; bl = 'VP(HP)'; }
+    F.step('Draw the reference line XY. On the folded sheet, the space above XY shows front views (VP) and the space below shows top views (HP). In the 2nd and 4th quadrants both planes overlap, so the labels change.')
+      .XY(-45, 45, tl, bl);
+    pointSteps(F, { n: 'a', h, d, x: 0 });
+    F.step('Result: ' + quadrant(h, d) + '.').Tx([22, Math.max(h, -d, 0) / 2 + 6], quadrant(h, d).split(' (')[0], { size: 'm', anchor: 'start', bold: true });
+    F.answer = `Point A is in the <b>${quadrant(h, d)}</b>.`;
+    F.module = `Module answer: ${['FIRST', 'SECOND', 'THIRD', 'FOURTH'][[1, 2, 3, 4].indexOf(h > 0 && d > 0 ? 1 : h > 0 && d < 0 ? 2 : h < 0 && d < 0 ? 3 : 4)] || ''}`;
+    F.module = '';
+    return F;
+  });
+}
+
+simplePointQ(1, 'A Ping pong ball is 30 mm above HP and 25 mm in front of VP. Draw its projections and state the quadrant in which the Ping pong ball is situated.', 30, 25);
+simplePointQ(2, 'Point “A” is 30 mm above HP and 25 mm behind VP. Draw its projections and state the quadrant in which the point is situated.', 30, -25);
+simplePointQ(3, 'Point “A” is 30 mm below HP and 40 mm behind VP. Draw its projections and state the quadrant in which the point is situated.', -30, -40);
+simplePointQ(4, 'Point “A” is 15 mm below HP and 25 mm in front of VP. Draw its projections and state the quadrant in which the point is situated.', -15, 25);
+simplePointQ(5, 'Point “A” is in both HP and VP. Draw its projections and state the quadrant in which the point is situated.', 0, 0);
+simplePointQ(6, 'Point “A” is 25 mm above HP and on VP. Draw its projections and state the quadrant in which the point is situated.', 25, 0);
+simplePointQ(7, 'Point “A” is 30 mm in front of VP and in the HP. Draw its projections and state the quadrant in which the point is situated.', 0, 30);
+simplePointQ(8, 'Point “A” is 40 mm behind the VP and in HP. Draw its projections and state the quadrant in which the point is situated.', 0, -40);
+simplePointQ(9, 'Point “A” is 35 mm below HP and in the VP. Draw its projections and state the quadrant in which the point is situated.', -35, 0);
+
+addQ('points', 10, 'One front view, two points a & b', 'A point 30 mm above XY line is the front view of two points “a & b”. The top view of “a” is 40 mm behind VP and top view of “b” is 45 mm in front of VP. Draw its projections and state the quadrant in which the point is situated.', () => {
+  const F = new Fig();
+  F.step('Draw XY.').XY(-45, 45, '', '');
+  F.step('Draw one projector. Both points share the same front view, so they lie on the same projector.').L([0, -50], [0, 45], 'p');
+  F.step('The common front view is 30 mm above XY. Mark it and label it a′b′ (both A and B are 30 mm above HP).').Pt([0, 30], P('a') + P('b'), 'e', 'fv').VDim([0, 30], 12);
+  F.step('A is 40 mm behind VP, so its top view a goes 40 mm ABOVE XY.').Pt([0, 40], 'a', 'e', 'tv').VDim([0, 40], -8);
+  F.step('B is 45 mm in front of VP, so its top view b goes 45 mm BELOW XY.').Pt([0, -45], 'b', 'e', 'tv').VDim([0, -45], -8);
+  F.step('Result: A is above HP and behind VP (II quadrant). B is above HP and in front of VP (I quadrant).')
+    .Tx([16, -20], 'a: II quadrant', { anchor: 'start', bold: true }).Tx([16, -28], 'b: I quadrant', { anchor: 'start', bold: true });
+  F.answer = 'Point <b>A</b> is in the <b>II quadrant</b> and point <b>B</b> is in the <b>I quadrant</b>.';
+  return F;
+});
+
+addQ('points', 11, 'Four points A, B, C, D on one XY line', 'Draw the projections of the following points on the same XY line, keeping convenient distance between each projector. Name the quadrants in which they lie. A – 30 mm above HP and 35 mm in front of VP. B – 35 mm above HP and 40 mm behind VP. C – 40 mm below HP and 30 mm behind VP. D – 35 mm below HP and 30 mm in front of VP.', () => {
+  const F = new Fig();
+  F.step('Draw one long XY line. Each point gets its own projector, about 35 mm apart.').XY(-25, 125, '', '');
+  const pts = [{ n: 'a', h: 30, d: 35, x: 0 }, { n: 'b', h: 35, d: -40, x: 35 }, { n: 'c', h: -40, d: -30, x: 70 }, { n: 'd', h: -35, d: 30, x: 105 }];
+  for (const p of pts) pointSteps(F, p);
+  F.step('Result: A – I, B – II, C – III, D – IV quadrant.')
+    .Tx([-20, -50], 'A – I   B – II   C – III   D – IV', { anchor: 'start', bold: true });
+  F.answer = 'A – <b>I</b> quadrant, B – <b>II</b> quadrant, C – <b>III</b> quadrant, D – <b>IV</b> quadrant.';
+  return F;
+});
+
+addQ('points', 12, 'Point P with RPP – side view', 'A point P is 30 mm in front of VP, 40 mm above HP and 50 mm from RPP. Draw its projections and name the side view. Also state the quadrant in which it lies.', () => {
+  const F = new Fig(); const x1 = 50;
+  F.step('Draw XY. Draw a vertical line X1Y1 crossing XY; it represents the Right Profile Plane (RPP).').XY(-25, 105, 'VP', 'HP').L([x1, 55], [x1, -50], 'xy').Tx([x1, 59], 'X1', { size: 'm' }).Tx([x1, -55], 'Y1', { size: 'm' }).Tx([x1 + 3, 6], 'RPP', { anchor: 'start', size: 's' });
+  F.step('P is 50 mm from RPP, so draw its projector 50 mm to the LEFT of X1Y1.').L([0, 45], [0, -35], 'p').Dim([0, 47], [x1, 47], '50', 0);
+  F.step('P is 40 mm above HP → mark p′ 40 mm above XY.').Pt([0, 40], P('p'), 'nw', 'fv').VDim([0, 40], -9);
+  F.step('P is 30 mm in front of VP → mark p 30 mm below XY.').Pt([0, -30], 'p', 'sw', 'tv').VDim([0, -30], -9);
+  F.step('Draw a 45° line through the point where XY meets X1Y1, going down to the right.').L([x1, 0], [x1 + 42, -42], 'c').Ang([x1, 0], 14, -45, 0, '45°');
+  F.step('From p draw a horizontal line to the 45° line, then go straight up. This turns the 30 mm (distance from VP) into a horizontal distance.').L([0, -30], [x1 + 30, -30], 'g').L([x1 + 30, -30], [x1 + 30, 40], 'g');
+  F.step('From p′ draw a horizontal line to the right. Where it meets the vertical line is p″ — the LEFT side view (seen on RPP).').L([0, 40], [x1 + 30, 40], 'g').Pt([x1 + 30, 40], PP('p'), 'ne', 'sv').Tx([x1 + 34, 30], 'Left side view', { anchor: 'start', size: 's' });
+  F.step('Result: P is above HP and in front of VP → I quadrant. Side view p″ is 40 mm above XY and 30 mm right of X1Y1.').Tx([x1 + 6, -48], 'Point P lies in I quadrant', { anchor: 'start', bold: true });
+  F.answer = 'Side view on RPP is the <b>left side view (p″)</b>. Point P lies in the <b>I quadrant</b>.';
+  return F;
+});
+
+addQ('points', 13, 'Point A with LPP – side view', 'Point ‘A’ is 30 mm in front of VP, 20 mm above HP and 25 mm in front / behind / from LPP. Draw its projections and name the side view. Also state the quadrant in which it lies.', () => {
+  const F = new Fig(); const x1 = 0, xa = 25;
+  F.step('“In front / behind” only applies to VP; for a profile plane read it as “25 mm FROM LPP”. Draw XY and a vertical line X1Y1 for the Left Profile Plane (LPP).').XY(-55, 70, 'VP', 'HP').L([x1, 40], [x1, -50], 'xy').Tx([x1, 44], 'X1', { size: 'm' }).Tx([x1, -55], 'Y1', { size: 'm' }).Tx([x1 + 3, 6], 'LPP', { anchor: 'start', size: 's' });
+  F.step('A is 25 mm from LPP, so its projector is 25 mm to the RIGHT of X1Y1.').L([xa, 30], [xa, -38], 'p').Dim([x1, 33], [xa, 33], '25', 0);
+  F.step('A is 20 mm above HP → mark a′ 20 mm above XY.').Pt([xa, 20], P('a'), 'ne', 'fv').VDim([xa, 20], xa + 10);
+  F.step('A is 30 mm in front of VP → mark a 30 mm below XY.').Pt([xa, -30], 'a', 'se', 'tv').VDim([xa, -30], xa + 10);
+  F.step('Draw a 45° line through the XY / X1Y1 crossing, going down to the LEFT.').L([x1, 0], [x1 - 40, -40], 'c').Ang([x1, 0], 14, 180, 225, '45°');
+  F.step('From a go horizontally LEFT to the 45° line, then straight up.').L([xa, -30], [-30, -30], 'g').L([-30, -30], [-30, 20], 'g');
+  F.step('From a′ go horizontally left. The meeting point is a″ — the RIGHT side view (seen on LPP).').L([xa, 20], [-30, 20], 'g').Pt([-30, 20], PP('a'), 'nw', 'sv').Tx([-34, 28], 'Right side view', { anchor: 'end', size: 's' });
+  F.step('Result: A is above HP and in front of VP → I quadrant.').Tx([10, -48], 'Point A lies in I quadrant', { anchor: 'start', bold: true });
+  F.answer = 'Side view on LPP is the <b>right side view (a″)</b>, drawn to the left of the front view. Point A lies in the <b>I quadrant</b>.';
+  return F;
+});
+
+// ===== Module 2B: Projections of lines =====
+// geometry of a line from end data. A at x=0.
+function lineGeo(ha, da, hb, db, L) {
+  const dh = hb - ha, dd = db - da;
+  const TL = hyp(L, dh, dd), tvL = hyp(L, dd), fvL = hyp(L, dh);
+  const g = {
+    ha, da, hb, db, L, dh, dd, TL, tvL, fvL,
+    th: asind(dh / TL), ph: asind(dd / TL), al: atan2d(dh, L), be: atan2d(dd, L),
+    ap: [0, ha], a: [0, -da], bp: [L, hb], b: [L, -db],
+    b1p: [tvL, hb], b1: [tvL, -da], b2: [fvL, -db], b2p: [fvL, ha]
+  };
+  return g;
+}
+// drawing helpers on a line geometry
+const LD = {
+  xy(F, g, ext = 0) { const x1 = Math.max(g.L, g.tvL, g.fvL) + 25 + ext; F.XY(-22, x1, 'VP', 'HP'); },
+  a(F, g, dimX = -10) {
+    F.L([0, Math.max(g.ha, 0) + 2], [0, Math.min(-g.da, 0) - 2], 'p');
+    F.Pt(g.ap, P('a'), g.ha === 0 ? 'nw' : 'nw', 'fv').Pt(g.a, 'a', 'sw', 'tv');
+    if (g.ha) F.VDim(g.ap, dimX); if (g.da) F.VDim(g.a, dimX);
+  },
+  locusBp(F, g, x1) { F.L([-8, g.hb], [x1, g.hb], 'cl').Tx([x1 + 1, g.hb + 2.5], 'Locus of ' + P('b'), { anchor: 'end', size: 's', color: '--dim' }); },
+  locusB(F, g, x1) { F.L([-8, -g.db], [x1, -g.db], 'cl').Tx([x1 + 1, -g.db + 2.5], 'Locus of b', { anchor: 'end', size: 's', color: '--dim' }); },
+  hA(F, g, x1) { F.L(g.ap, [x1, g.ha], 'cl').L(g.a, [x1, -g.da], 'cl'); },
+};
+
+function lineFinal(F, g, opts = {}) {
+  F.L(g.ap, g.bp, 'fv').L(g.a, g.b, 'tv').L(g.bp, g.b, 'p');
+  F.Pt(g.bp, P('b'), 'n', 'fv').Pt(g.b, 'b', 's', 'tv');
+}
+function alphaBeta(F, g) {
+  if (Math.abs(g.al) > 0.5) F.Ang(g.ap, 16, 0, g.al, 'α=' + f1(g.al) + '°', { tr: 7, noTool: true });
+  if (Math.abs(g.be) > 0.5) F.Ang(g.a, 16, -g.be, 0, 'β=' + f1(g.be) + '°', { tr: 7, noTool: true });
+}
+function lineMeasure(F, g, o = {}) {
+  const seg = (a, b, txt, off) => F.meas.push({ t: 'dim', a, b, text: txt, off, len: true });
+  if (!o.noFV) seg(g.ap, g.bp, 'FV = ' + f2(g.fvL), 9);
+  if (!o.noTV) seg(g.a, g.b, 'TV = ' + f2(g.tvL), -9);
+  if (!o.noTL1) seg(g.ap, g.b1p, 'TL = ' + f2(g.TL), -7);
+  if (!o.noTL2) seg(g.a, g.b2, 'TL = ' + f2(g.TL), 7);
+}
+function answerTable(rows) {
+  return '<table class="ans">' + rows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td></tr>`).join('') + '</table>';
+}
+
+// Standard rotating-line construction when TL, θ, φ (or TL + end distances) are given
+function rotLineFromTL(F, g, text) {
+  const xE = Math.max(g.tvL, g.fvL, g.L) + 22;
+  F.step(`Draw a line from ${P('a')} at θ = ${f1(g.th)}° to XY and mark the true length ${f2(g.TL)} mm on it. Call the end b1′. This is the line drawn as if it were parallel to VP.`)
+    .L(g.ap, g.b1p, 'tl').Ang(g.ap, 22, 0, g.th, 'θ=' + f1(g.th) + '°', { tr: 7 }).Pt(g.b1p, 'b1′', 'ne', 'fv')
+    .DimL(g.ap, g.b1p, 'TL = ' + f2(g.TL), -7);
+  F.step(`Draw a horizontal line through b1′. Every position of b′ must lie on it: this is the LOCUS OF b′ (B is ${f1(g.hb)} mm above HP).`);
+  LD.locusBp(F, g, xE);
+  F.step(`Project b1′ straight down to the horizontal line through a. This gives b1, and ab1 (${f2(g.tvL)} mm) is the TOP VIEW LENGTH.`)
+    .L(g.b1p, g.b1, 'p').L(g.a, [xE, -g.da], 'cl').Pt(g.b1, 'b1', 'ne', 'tv');
+  F.step(`Now from a draw a line at φ = ${f1(g.ph)}° below XY and mark the true length on it. Call the end b2.`)
+    .L(g.a, g.b2, 'tl').Ang(g.a, 22, -g.ph, 0, 'φ=' + f1(g.ph) + '°', { tr: 7 }).Pt(g.b2, 'b2', 'se', 'tv');
+  F.step('Draw a horizontal line through b2: this is the LOCUS OF b.');
+  LD.locusB(F, g, xE);
+  F.step(`Project b2 straight up to the horizontal through a′. This gives b2′, and a′b2′ (${f2(g.fvL)} mm) is the FRONT VIEW LENGTH.`)
+    .L(g.b2, g.b2p, 'p').L(g.ap, [xE, g.ha], 'cl').Pt(g.b2p, 'b2′', 'ne', 'fv');
+  F.step(`With a′ as centre and radius a′b2′, draw an arc to cut the locus of b′. That point is b′.`)
+    .Arc(g.ap, g.fvL, 0, g.al, 'c').Pt(g.bp, P('b'), 'n', 'fv');
+  F.step(`With a as centre and radius ab1, draw an arc to cut the locus of b. That point is b. Check: b′ and b fall on the SAME vertical projector.`)
+    .Arc(g.a, g.tvL, 0, -g.be, 'c').Pt(g.b, 'b', 's', 'tv').L(g.bp, g.b, 'p');
+  F.step('Join a′b′ (front view) and ab (top view) with thick lines. Measure the apparent angles α (front view) and β (top view).')
+    .L(g.ap, g.bp, 'fv').L(g.a, g.b, 'tv');
+  alphaBeta(F, g);
+}
+
+// Construction when both end positions are known: draw views, then rotate to get TL, θ, φ
+function rotLineFromEnds(F, g) {
+  const xE = Math.max(g.tvL, g.fvL, g.L) + 22;
+  F.step(`Draw B's projector ${f1(g.L)} mm (distance between end projectors) to the right of a′a. Mark b′ ${f1(g.hb)} mm above XY and b ${f1(g.db)} mm below XY.`)
+    .L([g.L, g.hb + 2], [g.L, -g.db - 2], 'p').Dim([0, -g.db - 6], [g.L, -g.db - 6], f1(g.L), 0)
+    .Pt(g.bp, P('b'), 'n', 'fv').Pt(g.b, 'b', 's', 'tv').VDim(g.bp, g.L + 14).VDim(g.b, g.L + 14);
+  F.step('Join a′b′ (front view) and ab (top view). These are the required projections. Their angles with XY are the apparent inclinations α and β.')
+    .L(g.ap, g.bp, 'fv').L(g.a, g.b, 'tv');
+  alphaBeta(F, g);
+  F.step('Draw the loci: horizontal lines through b′ (locus of b′) and b (locus of b), and through a′ and a.');
+  LD.locusBp(F, g, xE); LD.locusB(F, g, xE); LD.hA(F, g, xE);
+  F.step(`To find θ: with a as centre and radius ab, swing b onto the horizontal through a → b1. Project b1 up to the locus of b′ → b1′. a′b1′ is the TRUE LENGTH (${f2(g.TL)} mm) and its angle with XY is θ.`)
+    .Arc(g.a, g.tvL, -g.be, 0).Pt(g.b1, 'b1', 'ne', 'tv').L(g.b1, g.b1p, 'p').Pt(g.b1p, 'b1′', 'ne', 'fv').L(g.ap, g.b1p, 'tl')
+    .Ang(g.ap, 26, 0, g.th, 'θ=' + f1(g.th) + '°', { tr: 7, noTool: true });
+  F.step(`To find φ: with a′ as centre and radius a′b′, swing b′ onto the horizontal through a′ → b2′. Project b2′ down to the locus of b → b2. ab2 is also the true length, and its angle with XY is φ.`)
+    .Arc(g.ap, g.fvL, g.al, 0).Pt(g.b2p, 'b2′', 'se', 'fv').L(g.b2p, g.b2, 'p').Pt(g.b2, 'b2', 'se', 'tv').L(g.a, g.b2, 'tl')
+    .Ang(g.a, 26, -g.ph, 0, 'φ=' + f1(g.ph) + '°', { tr: 7, noTool: true });
+}
+
+// Q1 parallel to VP
+addQ('lines', 1, 'Lever AB parallel to VP, 40° to HP', 'A lever AB 60 mm long has its end “A” 20 mm above HP and 30 mm in front of VP. The lever is inclined at 40° to HP and parallel to VP. Draw its top and front views.', () => {
+  const F = new Fig(); const g = lineGeo(20, 30, 20 + 60 * sn(40), 30, 60 * cs(40));
+  F.step('Draw XY.'); LD.xy(F, g);
+  F.step('A is 20 mm above HP and 30 mm in front of VP: mark a′ 20 mm above XY and a 30 mm below XY on one projector.'); LD.a(F, g);
+  F.step('AB is PARALLEL TO VP, so its front view shows the TRUE LENGTH and the TRUE ANGLE θ. From a′ draw a′b′ = 60 mm at 40° to XY.')
+    .L(g.ap, g.bp, 'fv').Ang(g.ap, 18, 0, 40, '40°', { tr: 7 }).Pt(g.bp, P('b'), 'ne', 'fv').DimL(g.ap, g.bp, 'TL = 60', 8);
+  F.step('Drop a projector from b′. Because AB is parallel to VP, every point of AB is 30 mm in front of VP — so the top view is PARALLEL TO XY. Draw it from a to meet the projector at b.')
+    .L(g.bp, g.b, 'p').L(g.a, g.b, 'tv').Pt(g.b, 'b', 'se', 'tv').DimL(g.a, g.b, 'TV = ' + f2(g.L), -8);
+  F.answer = answerTable([['Front view a′b′', '60 mm (true length) at 40°'], ['Top view ab', f2(g.L) + ' mm, parallel to XY'], ['B above HP', f2(g.hb) + ' mm']]);
+  return F;
+});
+addQ('lines', 2, 'Pen AB parallel to HP, 40° to VP', 'A Pen AB 70 mm long has its end “A” 20 mm above HP and 30 mm in front of VP. The Pen is inclined at 40° to VP and parallel to HP. Draw its top and front views.', () => {
+  const F = new Fig(); const g = lineGeo(20, 30, 20, 30 + 70 * sn(40), 70 * cs(40));
+  F.step('Draw XY.'); LD.xy(F, g);
+  F.step('Mark a′ 20 mm above XY and a 30 mm below XY on one projector.'); LD.a(F, g);
+  F.step('AB is PARALLEL TO HP, so its TOP VIEW shows the true length and the true angle φ with VP. From a draw ab = 70 mm at 40° to XY (going away from XY).')
+    .L(g.a, g.b, 'tv').Ang(g.a, 18, -40, 0, '40°', { tr: 7 }).Pt(g.b, 'b', 'se', 'tv').DimL(g.a, g.b, 'TL = 70', -8);
+  F.step('Project b up. Every point of AB is 20 mm above HP, so the front view is PARALLEL TO XY: draw it from a′ to the projector to get b′.')
+    .L(g.b, g.bp, 'p').L(g.ap, g.bp, 'fv').Pt(g.bp, P('b'), 'ne', 'fv').DimL(g.ap, g.bp, 'FV = ' + f2(g.L), 6);
+  F.answer = answerTable([['Top view ab', '70 mm (true length) at 40°'], ['Front view a′b′', f2(g.L) + ' mm, parallel to XY']]);
+  return F;
+});
+function lineTLQ(num, text, TL, th, ph, ha, da, extra) {
+  addQ('lines', num, text.split('.')[0].slice(0, 70), text, () => {
+    const F = new Fig();
+    const dh = TL * sn(th), dd = TL * sn(ph), L = Math.sqrt(TL * TL - dh * dh - dd * dd);
+    const g = lineGeo(ha, da, ha + dh, da + dd, L);
+    F.step('Draw XY.'); LD.xy(F, g);
+    F.step(ha === 0 && da === 0 ? 'No position is given for A, so take A on both HP and VP: a′ and a coincide on XY.' : `Mark a′ ${ha} mm above XY and a ${da} mm below XY on one projector.`); LD.a(F, g);
+    rotLineFromTL(F, g);
+    lineMeasure(F, g, { noTL1: true });
+    if (extra) extra(F, g);
+    F.answer = answerTable([['Front view length a′b′', f2(g.fvL) + ' mm'], ['Top view length ab', f2(g.tvL) + ' mm'], ['Apparent angle α', f1(g.al) + '°'], ['Apparent angle β', f1(g.be) + '°'],
+      ['End B above HP', f2(g.hb) + ' mm'], ['End B in front of VP', f2(g.db) + ' mm'], ['Distance between end projectors', f2(g.L) + ' mm']]);
+    F.module = 'Module answers: a′b′ = 56.57 mm, ab = 69.28 mm, α = 45°, β = 55°.';
+    return F;
+  });
+}
+lineTLQ(3, 'A line AB 80 mm long has its end “A” 20 mm above the HP and 30 mm in front of VP. It is inclined at 30° to HP and 45° to VP. Draw the projections of the line and find apparent lengths and apparent inclinations.', 80, 30, 45, 20, 30);
+lineTLQ(4, 'A line AB 80 mm long is inclined to HP at 30° and VP at 45°. Draw front and top views of line and determine their lengths. Also measure the perpendicular distance of end B from both HP and VP.', 80, 30, 45, 0, 0);
+
+function lineEndsQ(num, text, ha, da, hb, db, L, mod) {
+  addQ('lines', num, text.split('.')[0].slice(0, 70), text, () => {
+    const F = new Fig(); const g = lineGeo(ha, da, hb, db, L);
+    F.step('Draw XY.'); LD.xy(F, g);
+    F.step(`A is ${ha} mm above HP and ${da} mm in front of VP: mark a′ and a on one projector.`); LD.a(F, g);
+    rotLineFromEnds(F, g);
+    lineMeasure(F, g);
+    F.answer = answerTable([['True length a′b1′', f2(g.TL) + ' mm'], ['Front view a′b′', f2(g.fvL) + ' mm'], ['Top view ab', f2(g.tvL) + ' mm'], ['True inclination θ (HP)', f1(g.th) + '°'], ['True inclination φ (VP)', f1(g.ph) + '°'], ['Apparent α', f1(g.al) + '°'], ['Apparent β', f1(g.be) + '°']]);
+    F.module = mod;
+    return F;
+  });
+}
+lineEndsQ(5, 'A line AB has its end “A” 20 mm above HP and 30 mm in front of VP. The other end “B” is 60 mm above the HP and 45 mm in front of VP. The distance between end projectors is 70 mm. Draw its projections and determine the true lengths and apparent inclinations.', 20, 30, 60, 45, 70,
+  'Module answers: a′b1′ = 82.01 mm, a′b′ = 80.62 mm, α = 30°, β = 12°. (The module also prints ab = 69.28 mm; its drawing measures 71.59 mm, which matches the calculation.)');
+lineEndsQ(6, 'A line AB has its end “A” 20 mm above the HP and 15 mm in front of the VP. The other end “B” is 60 mm above the HP and 45 mm in front of the VP. The distance between the end projectors is 70 mm. Draw its projections. Determine the true length and true inclination. Also determine the apparent lengths and inclinations.', 20, 15, 60, 45, 70,
+  'Module answers: a′b1′ = 86.02 mm, a′b′ = 80.62 mm, ab = 76.16 mm, α = 30°, θ = 28°, β = 23°, φ = 20°.');
+
+addQ('lines', 7, 'A 10/15, B 55 above, θ 30°, projectors 50 apart', 'A line has its end “A” 10 mm above HP and 15 mm in front of VP. The end “B” is 55 mm above HP and line is inclined at 30° to HP. The distance between the end projectors is 50 mm. Draw the projections of the line. Determine the true length of the line and its inclination with VP.', () => {
+  const F = new Fig();
+  const TL = 45 / sn(30), tv = TL * cs(30), dd = Math.sqrt(tv * tv - 2500);
+  const g = lineGeo(10, 15, 55, 15 + dd, 50); const xE = g.tvL + 22;
+  F.step('Draw XY.'); LD.xy(F, g);
+  F.step('Mark a′ 10 mm above XY and a 15 mm below XY on one projector.'); LD.a(F, g);
+  F.step('B is 55 mm above HP: draw the locus of b′, a horizontal line 55 mm above XY.'); LD.locusBp(F, g, xE); F.VDim([xE - 6, 55], xE - 6);
+  F.step('Draw B’s projector 50 mm (distance between end projectors) to the right of a′a.').L([50, 60], [50, -g.db - 4], 'p').Dim([0, 62], [50, 62], '50', 0);
+  F.step(`Find the true length: from a′ draw a line at θ = 30° to cut the locus of b′ at b1′. a′b1′ = TL = ${f2(g.TL)} mm.`)
+    .L(g.ap, g.b1p, 'tl').Ang(g.ap, 22, 0, 30, 'θ=30°', { tr: 7 }).Pt(g.b1p, 'b1′', 'ne', 'fv');
+  F.step(`Project b1′ down to the horizontal through a → b1. ab1 (${f2(g.tvL)} mm) is the top view length.`).L(g.b1p, g.b1, 'p').L(g.a, [xE, -g.da], 'cl').Pt(g.b1, 'b1', 'ne', 'tv');
+  F.step('With a as centre and radius ab1, draw an arc to cut B’s projector. That point is b.').Arc(g.a, g.tvL, 0, -g.be).Pt(g.b, 'b', 's', 'tv');
+  F.step('b′ is where B’s projector meets the locus of b′. Join a′b′ (front view) and ab (top view).').Pt(g.bp, P('b'), 'n', 'fv').L(g.ap, g.bp, 'fv').L(g.a, g.b, 'tv');
+  alphaBeta(F, g);
+  F.step('To find φ: draw the locus of b through b. With a′ as centre and radius a′b′, swing b′ down to the horizontal through a′ → b2′. Project b2′ down to the locus of b → b2.');
+  LD.locusB(F, g, xE); F.L(g.ap, [xE, g.ha], 'cl').Arc(g.ap, g.fvL, g.al, 0).Pt(g.b2p, 'b2′', 'se', 'fv').L(g.b2p, g.b2, 'p').Pt(g.b2, 'b2', 'se', 'tv');
+  F.step(`Join ab2. It is the true length again (${f2(g.TL)} mm), and its angle with XY is φ = ${f1(g.ph)}°.`).L(g.a, g.b2, 'tl').Ang(g.a, 30, -g.ph, 0, 'φ=' + f1(g.ph) + '°', { tr: 7, noTool: true });
+  lineMeasure(F, g);
+  F.answer = answerTable([['True length', f2(g.TL) + ' mm'], ['Inclination with VP, φ', f1(g.ph) + '°'], ['Front view a′b′', f2(g.fvL) + ' mm'], ['Top view ab', f2(g.tvL) + ' mm'], ['α / β', f1(g.al) + '° / ' + f1(g.be) + '°']]);
+  F.module = 'Module answers: a′b1′ = 90 mm, a′b′ = 67.27 mm, ab = 77.94 mm, φ = 42°, α = 42°, β = 50°.';
+  return F;
+});
+
+addQ('lines', 8, 'PQ 85 long, TV 75, FV 80', 'A line PQ 85 mm long has its end “P” 10 mm above HP and 15 mm in front of VP. The top view and front view of line PQ are 75 mm and 80 mm respectively. Draw its projections and also determine the true and apparent inclinations of the line to the reference planes.', () => {
+  const F = new Fig();
+  const dh = Math.sqrt(85 * 85 - 75 * 75), dd = Math.sqrt(85 * 85 - 80 * 80), L = Math.sqrt(75 * 75 - dd * dd);
+  const g = lineGeo(10, 15, 10 + dh, 15 + dd, L); const xE = Math.max(g.tvL, g.fvL) + 22;
+  const ren = s => s.replace(/b2/g, 'q2').replace(/b1/g, 'q1');
+  F.step('Draw XY.'); LD.xy(F, g);
+  F.step('Mark p′ 10 mm above XY and p 15 mm below XY on one projector.')
+    .L([0, 12], [0, -17], 'p').Pt(g.ap, P('p'), 'nw', 'fv').Pt(g.a, 'p', 'sw', 'tv').VDim(g.ap, -10).VDim(g.a, -10);
+  F.step('Find θ: from p draw a horizontal line ph = 75 mm (top view length) → q1. Project q1 up. With p′ as centre and radius 85 mm (TL), cut that projector at q1′. The angle of p′q1′ with XY is θ.')
+    .L(g.a, g.b1, 'c').Pt(g.b1, 'q1', 'se', 'tv').L(g.b1, g.b1p, 'p').Arc(g.ap, 85, g.th - 4, g.th + 4).L(g.ap, g.b1p, 'tl').Pt(g.b1p, 'q1′', 'ne', 'fv').Ang(g.ap, 26, 0, g.th, 'θ=' + f1(g.th) + '°', { tr: 7, noTool: true });
+  F.step('Draw a horizontal through q1′: the LOCUS OF q′.').L([-8, g.hb], [xE, g.hb], 'cl').Tx([xE, g.hb + 2.5], 'Locus of q′', { anchor: 'end', size: 's', color: '--dim' });
+  F.step('Find φ: from p′ draw a horizontal line 80 mm (front view length) → q2′. Project q2′ down. With p as centre and radius 85 mm, cut it at q2. The angle of pq2 with XY is φ.')
+    .L(g.ap, g.b2p, 'c').Pt(g.b2p, 'q2′', 'ne', 'fv').L(g.b2p, g.b2, 'p').Arc(g.a, 85, -g.ph - 4, -g.ph + 4).L(g.a, g.b2, 'tl').Pt(g.b2, 'q2', 'se', 'tv').Ang(g.a, 26, -g.ph, 0, 'φ=' + f1(g.ph) + '°', { tr: 7, noTool: true });
+  F.step('Draw a horizontal through q2: the LOCUS OF q.').L([-8, -g.db], [xE, -g.db], 'cl').Tx([xE, -g.db + 2.5], 'Locus of q', { anchor: 'end', size: 's', color: '--dim' });
+  F.step('With p′ as centre and radius 80 mm (FV length), cut the locus of q′ → q′. With p as centre and radius 75 mm (TV length), cut the locus of q → q. Check that q′ and q are on the same projector.')
+    .Arc(g.ap, g.fvL, 0, g.al).Arc(g.a, g.tvL, 0, -g.be).Pt(g.bp, P('q'), 'n', 'fv').Pt(g.b, 'q', 's', 'tv').L(g.bp, g.b, 'p');
+  F.step('Join p′q′ and pq. Measure the apparent angles α and β. (Apparent angles are always larger than the true ones: α > θ, β > φ.)').L(g.ap, g.bp, 'fv').L(g.a, g.b, 'tv');
+  alphaBeta(F, g);
+  lineMeasure(F, g);
+  F.answer = answerTable([['True inclination θ (HP)', f1(g.th) + '°'], ['True inclination φ (VP)', f1(g.ph) + '°'], ['Apparent α', f1(g.al) + '°'], ['Apparent β', f1(g.be) + '°'], ['Q above HP / in front of VP', f2(g.hb) + ' / ' + f2(g.db) + ' mm']]);
+  F.module = 'Module answers: α = 30°, θ = 28°, β = 22°, φ = 19°.';
+  return F;
+});
+
+addQ('lines', 9, 'Top view 70 at 60°, height difference 45', 'The top view PQ of a straight line is 70 mm and makes an angle of 60° with XY line. The end “Q” is 10 mm in front of VP and 30 mm above HP. The difference between the distances of “P” and “Q” above HP is 45 mm. Draw the projections. Determine its true length and true inclinations with HP and VP.', () => {
+  const F = new Fig();
+  const L = 70 * cs(60), dd = 70 * sn(60);
+  const g = lineGeo(30, 10, 75, 10 + dd, L); const xE = g.tvL + 22;
+  F.step('Draw XY.'); LD.xy(F, g);
+  F.step('Mark q′ 30 mm above XY and q 10 mm below XY on one projector.')
+    .L([0, 32], [0, -12], 'p').Pt(g.ap, P('q'), 'nw', 'fv').Pt(g.a, 'q', 'sw', 'tv').VDim(g.ap, -10).VDim(g.a, -10);
+  F.step('Top view: from q draw qp = 70 mm at 60° to XY, away from XY.').L(g.a, g.b, 'tv').Ang(g.a, 14, -60, 0, '60°', { tr: 7 }).Pt(g.b, 'p', 'se', 'tv').DimL(g.a, g.b, 'TV = 70', -7);
+  F.step('P is 45 mm higher than Q, so P is 30 + 45 = 75 mm above HP. Draw the locus of p′ 45 mm above q′.'); F.L([-8, 75], [xE, 75], 'cl').Tx([xE, 77.5], 'Locus of p′', { anchor: 'end', size: 's', color: '--dim' }).Dim([xE - 4, 30], [xE - 4, 75], '45', 0).L(g.ap, [xE, 30], 'cl');
+  F.step('Project p up to the locus → p′. Join q′p′: the front view.').L(g.b, g.bp, 'p').Pt(g.bp, P('p'), 'n', 'fv').L(g.ap, g.bp, 'fv');
+  F.step(`Find TL and θ: with q as centre swing p onto the horizontal through q → p1. Project p1 up to the locus → p1′. q′p1′ = TL = ${f2(g.TL)} mm, angle θ.`)
+    .L(g.a, [xE, -10], 'cl').Arc(g.a, g.tvL, -g.be, 0).Pt(g.b1, 'p1', 'ne', 'tv').L(g.b1, g.b1p, 'p').Pt(g.b1p, 'p1′', 'ne', 'fv').L(g.ap, g.b1p, 'tl').Ang(g.ap, 24, 0, g.th, 'θ=' + f1(g.th) + '°', { tr: 7, noTool: true });
+  F.step('Find φ: with q′ as centre swing p′ down to the horizontal through q′ → p2′. Project p2′ down to the horizontal through p (locus of p) → p2. qp2 = TL, angle φ.');
+  F.L([-8, -g.db], [xE, -g.db], 'cl').Arc(g.ap, g.fvL, g.al, 0).Pt(g.b2p, 'p2′', 'se', 'fv').L(g.b2p, g.b2, 'p').Pt(g.b2, 'p2', 'se', 'tv').L(g.a, g.b2, 'tl').Ang(g.a, 30, -g.ph, 0, 'φ=' + f1(g.ph) + '°', { tr: 7, noTool: true });
+  lineMeasure(F, g, { noTV: true });
+  F.answer = answerTable([['True length', f2(g.TL) + ' mm'], ['θ (HP)', f1(g.th) + '°'], ['φ (VP)', f1(g.ph) + '°'], ['Front view q′p′', f2(g.fvL) + ' mm'], ['α', f1(g.al) + '°']]);
+  F.module = 'Module answers: p′q1′ = 71.59 mm, p′q′ = 38.08 mm, θ = 12°, φ = 58°, α = 23°, β = 60°. Note: the module’s figure uses a 15 mm height difference (P 30 and Q 45 above HP), not 45 mm as the question says. With a 45 mm difference the values are those shown above — check with your teacher which to follow.';
+  return F;
+});
+
+addQ('lines', 10, 'AB 70 long, A 15/20, B 60/50', 'A line AB measuring 70 mm has its end “A” 15 mm in front of VP and 20 mm above HP and the other end “B” is 60 mm in front of VP and 50 mm above HP. Draw the projections of the line and find the inclinations of the line with both the reference planes of projection.', () => {
+  const F = new Fig();
+  const dh = 30, dd = 45, L = Math.sqrt(4900 - dh * dh - dd * dd);
+  const g = lineGeo(20, 15, 50, 60, L); const xE = Math.max(g.tvL, g.fvL) + 22;
+  F.step('Draw XY.'); LD.xy(F, g);
+  F.step('Mark a′ 20 mm above XY and a 15 mm below XY.'); LD.a(F, g);
+  F.step('Draw the locus of b′ (50 mm above XY) and the locus of b (60 mm below XY), plus horizontals through a′ and a.');
+  LD.locusBp(F, g, xE); LD.locusB(F, g, xE); LD.hA(F, g, xE);
+  F.step('θ: with a′ as centre and radius 70 mm (TL), cut the locus of b′ at b1′. Angle of a′b1′ with XY = θ.').Arc(g.ap, 70, g.th - 5, g.th + 5).L(g.ap, g.b1p, 'tl').Pt(g.b1p, 'b1′', 'ne', 'fv').Ang(g.ap, 26, 0, g.th, 'θ=' + f1(g.th) + '°', { tr: 7, noTool: true });
+  F.step('φ: with a as centre and radius 70 mm, cut the locus of b at b2. Angle of ab2 with XY = φ.').Arc(g.a, 70, -g.ph - 5, -g.ph + 5).L(g.a, g.b2, 'tl').Pt(g.b2, 'b2', 'se', 'tv').Ang(g.a, 26, -g.ph, 0, 'φ=' + f1(g.ph) + '°', { tr: 7, noTool: true });
+  F.step(`Project b1′ down to the horizontal through a → b1 (ab1 = TV length ${f2(g.tvL)}). Project b2 up to the horizontal through a′ → b2′ (a′b2′ = FV length ${f2(g.fvL)}).`)
+    .L(g.b1p, g.b1, 'p').Pt(g.b1, 'b1', 'ne', 'tv').L(g.b2, g.b2p, 'p').Pt(g.b2p, 'b2′', 'ne', 'fv');
+  F.step('With a′ as centre and radius a′b2′ cut the locus of b′ → b′. With a as centre and radius ab1 cut the locus of b → b. They must lie on one projector.')
+    .Arc(g.ap, g.fvL, 0, g.al).Arc(g.a, g.tvL, 0, -g.be).Pt(g.bp, P('b'), 'n', 'fv').Pt(g.b, 'b', 's', 'tv').L(g.bp, g.b, 'p');
+  F.step('Join a′b′ and ab.').L(g.ap, g.bp, 'fv').L(g.a, g.b, 'tv'); alphaBeta(F, g);
+  lineMeasure(F, g);
+  F.answer = answerTable([['θ (HP)', f1(g.th) + '°'], ['φ (VP)', f1(g.ph) + '°'], ['α', f1(g.al) + '°'], ['β', f1(g.be) + '°'], ['Distance between projectors', f2(g.L) + ' mm']]);
+  F.module = 'Module answers: θ = 25°, φ = 40°, α = 34°, β = 45°.';
+  return F;
+});
+
+// ===== Module 2C: Projections of planes (laminas) — three-stage engine =====
+const LBL = 'abcdefghijklmnop';
+function regPoly(n, s, startAng = 90) {
+  const R = s / (2 * sn(180 / n)); const pts = [];
+  for (let i = 0; i < n; i++) { const a = startAng + i * 360 / n; pts.push({ n: LBL[i], u: R * cs(a), v: R * sn(a) }); }
+  return pts;
+}
+function rectPts(w, h) { return [{ n: 'a', u: 0, v: 0 }, { n: 'b', u: w, v: 0 }, { n: 'c', u: w, v: h }, { n: 'd', u: 0, v: h }]; }
+function circlePts(D, N = 72) {
+  const pts = []; const lab = 'abcdefgh';
+  for (let i = 0; i < N; i++) { const a = 180 + i * 360 / N; pts.push({ n: i % (N / 8) === 0 ? lab[i / (N / 8)] : '', u: D / 2 * cs(a), v: D / 2 * sn(a) }); }
+  return pts;
+}
+const centroid2 = pts => { let x = 0, y = 0; pts.forEach(p => { x += p[0]; y += p[1]; }); return [x / pts.length, y / pts.length]; };
+
+function lamina(cfg) {
+  const F = new Fig();
+  const HPm = cfg.plane !== 'VP';
+  const pts0 = cfg.shape.map(p => ({ n: p.n, q: [p.u, p.v] }));
+  const idx = n => pts0.findIndex(p => p.n === n);
+  const C0 = centroid2(pts0.map(p => p.q));
+  // ---- orientation: resting element on the right, interior to the left
+  let R, w;
+  if (cfg.rest.edge) {
+    const A = pts0[idx(cfg.rest.edge[0])].q, B = pts0[idx(cfg.rest.edge[1])].q;
+    R = mid(A, B); const e = unit(sub(B, A)); let nrm = [-e[1], e[0]];
+    if ((C0[0] - R[0]) * nrm[0] + (C0[1] - R[1]) * nrm[1] < 0) nrm = mul(nrm, -1);
+    w = nrm;
+  } else { R = pts0[idx(cfg.rest.corner)].q; w = unit(sub(C0, R)); }
+  const rot0 = 180 - atan2d(w[1], w[0]) + (cfg.flip0 || 0);
+  const rot2 = (q, a) => [q[0] * cs(a) - q[1] * sn(a), q[0] * sn(a) + q[1] * cs(a)];
+  let s1 = pts0.map(p => ({ n: p.n, q: rot2(sub(p.q, R), rot0) }));     // pivot at origin, shape to the left
+  if (cfg.mirror) s1 = s1.map(p => ({ n: p.n, q: [p.q[0], -p.q[1]] }));
+  const gap = cfg.gap ?? 10;
+  const minV = Math.min(...s1.map(p => p.q[1])), maxV = Math.max(...s1.map(p => p.q[1]));
+  // 3D points: {x,y,z} ; y = in front of VP, z = height
+  let st1;
+  if (HPm) st1 = s1.map(p => ({ n: p.n, x: p.q[0], y: gap + (maxV - p.q[1]), z: 0 }));
+  else st1 = s1.map(p => ({ n: p.n, x: p.q[0], y: 0, z: gap + (p.q[1] - minV) }));
+  const pivotOf = arr => {
+    if (cfg.rest.edge) { const a = arr.find(p => p.n === cfg.rest.edge[0]), b = arr.find(p => p.n === cfg.rest.edge[1]); return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 }; }
+    const c = arr.find(p => p.n === cfg.rest.corner); return { x: c.x, y: c.y, z: c.z };
+  };
+  const ptBy = (arr, spec) => {
+    if (Array.isArray(spec)) { const a = ptBy(arr, spec[0]), b = ptBy(arr, spec[1]); return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 }; }
+    return arr.find(p => p.n === spec);
+  };
+  // ---- stage 2 tilt
+  let t;
+  if (cfg.tilt.deg !== undefined) t = cfg.tilt.deg;
+  else { const p = ptBy(st1, cfg.tilt.of); const dx = -p.x; t = asind((cfg.tilt.h - (HPm ? 0 : 0)) / dx); }
+  let st2;
+  if (HPm) st2 = st1.map(p => ({ n: p.n, x: p.x * cs(t), y: p.y, z: -p.x * sn(t) }));
+  else st2 = st1.map(p => ({ n: p.n, x: p.x * cs(t), y: -p.x * sn(t), z: p.z }));
+  // ---- stage 3 rotation
+  const s3 = cfg.s3;
+  const A2 = ptBy(st2, s3.ref[0]), B2 = ptBy(st2, s3.ref[1]);
+  let target = s3.deg, conv = '';
+  if (s3.kind === 'true') {
+    if (HPm) { const L3 = hyp(B2.x - A2.x, B2.y - A2.y, B2.z - A2.z); const thl = asind(Math.abs(B2.z - A2.z) / L3); if (thl > 0.5) { target = asind(sn(s3.deg) / cs(thl)); conv = `This line is itself inclined at ${f1(thl)}° to HP, so its top view will NOT show the true ${s3.deg}°. Its apparent angle β is found from sin β = sin ${s3.deg}° ÷ cos ${f1(thl)}° → β = ${f1(target)}° (or by the locus method: draw the line at its true length at ${s3.deg}° and swing it onto the locus).`; } }
+    else { const L3 = hyp(B2.x - A2.x, B2.y - A2.y, B2.z - A2.z); const phl = asind(Math.abs(B2.y - A2.y) / L3); if (phl > 0.5) { target = asind(sn(s3.deg) / cs(phl)); conv = `This line is itself inclined at ${f1(phl)}° to VP, so its front view will NOT show the true ${s3.deg}°. Its apparent angle α is found from sin α = sin ${s3.deg}° ÷ cos ${f1(phl)}° → α = ${f1(target)}°.`; } }
+  }
+  const pv2 = pivotOf(st2);
+  const planOf = p => HPm ? [p.x - pv2.x, p.y - pv2.y] : [p.x - pv2.x, p.z - pv2.z];
+  const v0 = planOf(B2), v0a = planOf(A2); const vv = sub(v0, v0a);
+  // angle measured on paper: HP mode paper = (x, -y) ; VP mode paper = (x, z)
+  const paperAng = v => HPm ? atan2d(-v[1], v[0]) : atan2d(v[1], v[0]);
+  const a0 = paperAng(vv);
+  const cands = [target, -target, 180 - target, 180 + target].map(tg => { let r = tg - a0; while (r > 180) r -= 360; while (r <= -180) r += 360; return r; });
+  const rotPlan = (arr, r) => arr.map(p => {
+    const v = planOf(p); const pv = HPm ? [v[0], -v[1]] : v; const q = rot2(pv, r);
+    return HPm ? { n: p.n, x: pv2.x + q[0], y: pv2.y - q[1], z: p.z } : { n: p.n, x: pv2.x + q[0], y: p.y, z: pv2.z + q[1] };
+  });
+  let best = null, bestS = -Infinity;
+  const pref = s3.prefer || 'right';
+  for (const r of cands) {
+    const arr = rotPlan(st2, r); const c = { x: 0, y: 0, z: 0 }; arr.forEach(p => { c.x += p.x; c.y += p.y; c.z += p.z; }); c.x /= arr.length; c.y /= arr.length; c.z /= arr.length;
+    const dx = c.x - pv2.x, dy = HPm ? c.y - pv2.y : c.z - pv2.z;
+    let sc = pref === 'right' ? dx + 0.3 * dy : pref === 'left' ? -dx + 0.3 * dy : pref === 'front' ? dy + 0.01 * dx : pref === 'back' ? -dy + 0.01 * dx : pref === 'up' ? dy + 0.01 * dx : pref === 'down' ? -dy + 0.01 * dx : 0;
+    if (typeof pref === 'function') sc = pref(arr, dx, dy);
+    sc -= Math.abs(r) * 1e-4;
+    if (sc > bestS) { bestS = sc; best = { r, arr }; }
+  }
+  let st3 = best.arr;
+  // depth / height placement
+  if (HPm) {
+    let sh = 0;
+    if (s3.touch) { const tp = ptBy(st3, s3.touch); sh = -tp.y; }
+    else { const mn = Math.min(...st3.map(p => p.y)); if (mn < gap) sh = gap - mn; }
+    st3 = st3.map(p => ({ n: p.n, x: p.x, y: p.y + sh, z: p.z }));
+  } else {
+    let sh = 0; const mn = Math.min(...st3.map(p => p.z)); if (mn < gap) sh = gap - mn;
+    if (s3.keepPivot) sh = 0;
+    st3 = st3.map(p => ({ n: p.n, x: p.x, y: p.y, z: p.z + sh }));
+  }
+  // ---- x placement of stages
+  const G = 34;
+  const span = arr => [Math.min(...arr.map(p => p.x)), Math.max(...arr.map(p => p.x))];
+  const shiftX = (arr, d) => arr.map(p => Object.assign({}, p, { x: p.x + d }));
+  let [m1, M1] = span(st1); st1 = shiftX(st1, -m1); M1 -= m1;
+  let [m2, M2] = span(st2); const o2 = M1 + G - m2; st2 = shiftX(st2, o2);
+  let [m3, M3] = span(st3); const o3 = (M2 + o2) + G + 6 - m3; st3 = shiftX(st3, o3);
+  const xEnd = M3 + o3 + 12;
+  // projections
+  const FVp = p => [p.x, p.z], TVp = p => [p.x, -p.y];
+  const lab = p => p.n;
+  const named = arr => arr.filter(p => p.n);
+  const area = pts => { let s = 0; for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; s += a[0] * b[1] - a[1] * b[0]; } return Math.abs(s / 2); };
+  const drawView = (arr, view, style, labels = true) => {
+    const pp = arr.map(view);
+    const thin = area(pp) < 0.5;
+    let i0 = 0, i1 = 0;
+    if (thin) {
+      let dmax = -1;
+      for (let i = 0; i < pp.length; i++) for (let j = i + 1; j < pp.length; j++) { const d = Math.hypot(pp[i][0] - pp[j][0], pp[i][1] - pp[j][1]); if (d > dmax) { dmax = d; i0 = i; i1 = j; } }
+      F.L(pp[i0], pp[i1], style);
+    } else F.PL(pp, style, true);
+    if (!labels) return;
+    const isF = view === FVp;
+    const list = named(arr).map(p => ({ p: view(p), lab: isF ? P(p.n) : p.n, depth: isF ? p.y : p.z }));
+    const groups = clusterLabels(list);
+    const c = centroid2(pp);
+    let nrm = [0, 1];
+    if (thin) { const d = unit(sub(pp[i1], pp[i0])); nrm = [-d[1], d[0]]; if (isF ? nrm[1] < 0 : nrm[1] > 0) nrm = mul(nrm, -1); if (Math.abs(nrm[1]) < 0.2) nrm = isF ? [0, 1] : [0, -1]; }
+    for (const gr of groups) F.Lab(gr.p, gr.lab, thin ? nrm : awayDir(gr.p, c), isF ? 'fv' : 'tv');
+  };
+  const name = cfg.name || 'lamina';
+  const P1 = HPm ? 'HP' : 'VP', V1 = HPm ? 'top view' : 'front view', V2 = HPm ? 'front view' : 'top view';
+  const restTxt = cfg.rest.edge ? `edge ${cfg.rest.edge.join('').toUpperCase()}` : `corner ${cfg.rest.corner.toUpperCase()}`;
+  const yMax = Math.max(...st3.map(p => p.y), ...st2.map(p => p.y), ...st1.map(p => p.y));
+  F.step(`Read the question: the surface is inclined to ${P1}, so the ${name} must be drawn in THREE stages, changing one angle at a time. It rests on ${P1} on ${cfg.rest.edge ? 'an edge (call it ' + restTxt + ')' : 'a corner (call it ' + restTxt + ')'}. Draw XY.`)
+    .XY(-30, xEnd, 'VP', 'HP');
+  // stage 1
+  const s1cap = HPm
+    ? `STAGE 1 – Assume the ${name} lies FLAT on HP. Its top view is the TRUE SHAPE: draw ${cfg.desc}, with the resting ${cfg.rest.edge ? 'edge ' + cfg.rest.edge.join('') + ' perpendicular to XY' : 'corner ' + cfg.rest.corner} on the RIGHT.`
+    : `STAGE 1 – Assume the ${name} lies IN (parallel to) VP. Its front view is the TRUE SHAPE: draw ${cfg.desc}, with the resting ${cfg.rest.edge ? 'edge ' + cfg.rest.edge.join('') + ' vertical' : 'corner ' + cfg.rest.corner} on the RIGHT.`;
+  F.step(s1cap); drawView(st1, HPm ? TVp : FVp, HPm ? 'tv' : 'fv');
+  if (cfg.s1dims) cfg.s1dims(F, st1, HPm ? TVp : FVp);
+  F.step(HPm ? 'Project every corner up to XY. Lying flat on HP, the whole lamina’s front view is a single LINE on XY.' : 'Project every corner down to XY. Lying in VP, the lamina’s top view is a single LINE on XY.');
+  for (const p of named(st1)) F.L(HPm ? TVp(p) : FVp(p), [p.x, 0], 'p');
+  drawView(st1, HPm ? FVp : TVp, HPm ? 'fv' : 'tv');
+  // stage 2
+  const tiltWhy = cfg.tilt.deg !== undefined ? (cfg.tilt.why || `the surface makes ${f1(t)}° with ${P1}`) : `Raise it until ${Array.isArray(cfg.tilt.of) ? 'side ' + cfg.tilt.of.join('').toUpperCase() : 'corner ' + cfg.tilt.of.toUpperCase()} is ${cfg.tilt.h} mm ${HPm ? 'above HP' : 'in front of VP'}: mark a line ${cfg.tilt.h} mm from XY and swing the end onto it. The angle obtained is the inclination θ = ${f1(t)}°.`;
+  const pivot2 = pivotOf(st2);
+  const pv2v = HPm ? FVp(pivot2) : TVp(pivot2);
+  const far1 = HPm ? st1.reduce((m, p) => p.x < m.x ? p : m) : st1.reduce((m, p) => p.x < m.x ? p : m);
+  F.step(`STAGE 2 – Tilt it about the resting ${cfg.rest.edge ? 'edge' : 'corner'} (kept on XY, on the right). Copy the ${V2} line to the right and rotate it: ${tiltWhy}`);
+  const Lr = Math.max(...st1.map(p => -(p.x - st1.find(q => q.n === (cfg.rest.edge ? cfg.rest.edge[0] : cfg.rest.corner)).x)));
+  if (cfg.tilt.h !== undefined) { F.L([pv2v[0] - Lr - 4, HPm ? cfg.tilt.h : -cfg.tilt.h], [pv2v[0] + 4, HPm ? cfg.tilt.h : -cfg.tilt.h], 'cl'); F.Dim([pv2v[0] + 6, 0], [pv2v[0] + 6, HPm ? cfg.tilt.h : -cfg.tilt.h], String(cfg.tilt.h), 0); }
+  F.Arc(pv2v, Lr, 180, HPm ? 180 - t : 180 + t, 'c');
+  F.L([pv2v[0] - Lr, 0], pv2v, 'c');
+  drawView(st2, HPm ? FVp : TVp, HPm ? 'fv' : 'tv');
+  F.Ang(pv2v, 13, HPm ? 180 - t : 180, HPm ? 180 : 180 + t, (cfg.tilt.h !== undefined ? 'θ=' : '') + f1(t) + '°', { tr: 7, noTool: cfg.tilt.h !== undefined });
+  F.step(`Draw horizontal lines from every corner of the stage-1 ${V1} (depths ${HPm ? 'from VP' : 'above HP'} do not change when tilting), and drop projectors from the new ${V2} points.`);
+  for (const p of named(st2)) {
+    const p1 = st1.find(q => q.n === p.n);
+    F.L(HPm ? TVp(p1) : FVp(p1), HPm ? TVp(p) : FVp(p), 'g');
+    F.L(HPm ? FVp(p) : TVp(p), HPm ? TVp(p) : FVp(p), 'p');
+  }
+  F.step(`Where each projector meets its horizontal line is the new corner. Join them: the stage-2 ${V1} is ${HPm ? 'narrower' : 'narrower'} than the true shape because the ${name} is tilted.`);
+  drawView(st2, HPm ? TVp : FVp, HPm ? 'tv' : 'fv');
+  // stage 3
+  const A3 = ptBy(st3, s3.ref[0]), B3 = ptBy(st3, s3.ref[1]);
+  const vA = HPm ? TVp(A3) : FVp(A3), vB = HPm ? TVp(B3) : FVp(B3);
+  const angLine = atan2d(vB[1] - vA[1], vB[0] - vA[0]);
+  let cap3 = `STAGE 3 – Now turn the whole ${name} (without changing its tilt) so that ${s3.what} ${target < 0.01 ? 'is parallel to XY' : 'makes ' + (s3.kind === 'true' && conv ? 'the required angle' : f1(target) + '°') + ' with XY'}. `;
+  if (s3.kind === 'true' && !conv && target >= 0.01) cap3 += `It is parallel to ${P1}, so its ${V1} shows the TRUE angle ${s3.deg}° directly. `;
+  if (s3.kind === 'plan' || s3.kind === 'apparent') cap3 += `“Appears inclined” means the ${V1} angle itself is ${s3.deg}°. `;
+  if (conv) cap3 += conv + ' ';
+  if (s3.touch) cap3 += HPm ? `Place it so that ${Array.isArray(s3.touch) ? 'side ' + s3.touch.join('').toUpperCase() : 'corner ' + s3.touch.toUpperCase()} lies ON XY (touching VP). ` : '';
+  cap3 += `Draw that line first.`;
+  F.step(cap3).L(vA, vB, HPm ? 'tv' : 'fv');
+  // angle mark at the endpoint nearer XY / pivot
+  {
+    let a = angLine; let c = vA;
+    // measure angle between line and horizontal at c, acute
+    let dir = sub(vB, vA); if (dir[0] < 0) { c = vB; dir = mul(dir, -1); }
+    a = atan2d(dir[1], dir[0]);
+    if (Math.abs(a) > 0.5 && Math.abs(Math.abs(a) - 180) > 0.5) {
+      F.L(c, add(c, [Math.max(18, len(dir) * 0.5), 0]), 'c');
+      F.Ang(c, 14, Math.min(0, a), Math.max(0, a), f1(Math.abs(a)) + '°', { tr: 7 });
+    }
+  }
+  F.step(`Complete the stage-3 ${V1} as an exact COPY of the stage-2 ${V1} (same shape and size), just turned. Transfer the distances with a compass from the line you just drew.`);
+  drawView(st3, HPm ? TVp : FVp, HPm ? 'tv' : 'fv');
+  F.step(`Project every corner ${HPm ? 'up' : 'down'}, and draw horizontal lines from the stage-2 ${V2} (${HPm ? 'heights above HP' : 'distances from VP'} do not change when the ${name} is turned).`);
+  for (const p of named(st3)) {
+    const p2 = st2.find(q => q.n === p.n);
+    F.L(HPm ? TVp(p) : FVp(p), HPm ? FVp(p) : TVp(p), 'p');
+    F.L(HPm ? FVp(p2) : TVp(p2), HPm ? FVp(p) : TVp(p), 'g');
+  }
+  F.step(`Where each projector meets its horizontal is the final ${V2} corner. Join them. The stage-3 views are the REQUIRED PROJECTIONS.`);
+  drawView(st3, HPm ? FVp : TVp, HPm ? 'fv' : 'tv');
+  F._st = { st1, st2, st3, t, target, cfg };
+  return F;
+}
+
+// ---------- questions ----------
+const tri = (s) => { const h = s * sn(60); return [{ n: 'a', u: -h, v: 0 }, { n: 'b', u: 0, v: -s / 2 }, { n: 'c', u: 0, v: s / 2 }]; };
+function addLam(num, title, text, cfg, ans, mod) {
+  addQ('planes', num, title, text, () => {
+    const F = lamina(cfg);
+    const st = F._st;
+    F.answer = typeof ans === 'function' ? ans(st) : (ans || answerTable([['Surface inclination (stage 2)', f1(st.t) + '°'], ['Angle drawn in stage 3', st.target < 0.01 ? '0° (parallel to XY)' : f1(st.target) + '°']]));
+    if (mod) F.module = mod;
+    return F;
+  });
+}
+addLam(1, 'Triangle on edge, 60° HP, edge 60° VP', 'An equilateral triangular lamina of 25 mm sides lies with one of its edges on HP such that the surface of the lamina is inclined to HP at 60°. The edge on which it rests is inclined to VP at 60°. Draw its projections.',
+  { shape: tri(25), desc: 'an equilateral triangle abc of 25 mm sides', rest: { edge: ['b', 'c'] }, tilt: { deg: 60 }, s3: { ref: ['b', 'c'], deg: 60, kind: 'true', what: 'the resting edge bc' } });
+addLam(2, 'Triangle on edge, 60° HP, edge 30° VP', 'An equilateral triangular lamina of 25 mm side rests one of its edges on HP such that the surface of the lamina is inclined to HP at 60°. The edge on which it rests is inclined to VP at 30°. Draw its projections.',
+  { shape: tri(25), desc: 'an equilateral triangle abc of 25 mm sides', rest: { edge: ['b', 'c'] }, tilt: { deg: 60 }, s3: { ref: ['b', 'c'], deg: 30, kind: 'true', what: 'the resting edge bc' } });
+addLam(3, 'Triangle on corner, opposite side 15 above HP, 30° VP', 'A triangular plane lamina of sides 25 mm is resting on HP with one of its corners touching it, such that the side opposite to the corner on which it rests is 15 mm above HP and makes an angle of 30° with VP. Draw the top and front views in this position. Also determine the inclination of the lamina to the reference plane.',
+  { shape: [{ n: 'a', u: 0, v: 12.5 }, { n: 'b', u: 0, v: -12.5 }, { n: 'c', u: 25 * sn(60), v: 0 }], desc: 'an equilateral triangle abc of 25 mm sides', rest: { corner: 'c' }, tilt: { h: 15, of: ['a', 'b'] }, s3: { ref: ['a', 'b'], deg: 30, kind: 'true', what: 'side ab (it is parallel to HP)' } },
+  st => answerTable([['Inclination of the lamina to HP, θ', f2(st.t) + '°']]), 'Module answer: θ = 43.86°.');
+addLam(4, 'Triangle on side, 45° HP, median 40° VP', 'An equilateral triangular lamina of 25 mm sides lies on one of its sides on HP. The lamina makes 45° with HP and one of its medians is inclined at 40° to VP. Draw the projections.',
+  { shape: tri(25), desc: 'an equilateral triangle abc of 25 mm sides', rest: { edge: ['b', 'c'] }, tilt: { deg: 45 }, s3: { ref: ['a', ['b', 'c']], deg: 40, kind: 'true', what: 'the median from a (to the mid-point of bc)' } },
+  st => answerTable([['Apparent angle of the median in top view, β', f2(st.target) + '°']]), 'Module answer: β = 65.36°.');
+addLam(5, '30°–60° set square, longest side on HP', 'A 30°–60° set square of 60 mm longest side is so kept such that the longest side is in HP, making an angle of 30° with VP. The set square itself is inclined at 45° to HP. Draw the projections of the set square.',
+  { name: 'set square', shape: [{ n: 'a', u: 0, v: -30 }, { n: 'b', u: 0, v: 30 }, { n: 'c', u: -30 * sn(60), v: -15 }], desc: 'the set square: ab = 60 mm (longest side), angle at b = 30°, angle at a = 60°', rest: { edge: ['a', 'b'] }, tilt: { deg: 45 }, s3: { ref: ['a', 'b'], deg: 30, kind: 'true', what: 'the longest side ab' } });
+addLam(6, 'Rectangle 20×30 on longer edge, 45° HP, 30° VP', 'A rectangular marble (negligible thickness) of sides 20 mm × 30 mm rests on HP on one of its longer edges. The marble is tilted about the edge on which it rests till its plane surface is inclined to HP at 45°. The edge on which it rests is inclined at 30° to VP. Draw the projections of the marble.',
+  { name: 'marble', shape: rectPts(20, 30), desc: 'the 20 × 30 rectangle abcd', rest: { edge: ['b', 'c'] }, tilt: { deg: 45 }, s3: { ref: ['b', 'c'], deg: 30, kind: 'true', what: 'the resting edge bc' } });
+addLam(7, 'Square kite 40 on side, 30° HP, side 45° VP', 'A square kite of 40 mm side rests on one of its sides on HP. The kite makes 30° to HP and the side on which it rests makes 45° to VP. Draw its projections.',
+  { name: 'kite', shape: rectPts(40, 40), desc: 'the 40 mm square abcd', rest: { edge: ['b', 'c'] }, tilt: { deg: 30 }, s3: { ref: ['b', 'c'], deg: 45, kind: 'true', what: 'the resting side bc' } });
+addLam(8, 'Square plate, diagonal 30° HP and 45° VP', 'A square plate of 40 mm sides rests on HP such that one of the diagonals is inclined at 30° to HP and 45° to VP. Draw its projections.',
+  { name: 'plate', shape: [{ n: 'a', u: -28.284, v: 0 }, { n: 'b', u: 0, v: -28.284 }, { n: 'c', u: 28.284, v: 0 }, { n: 'd', u: 0, v: 28.284 }], desc: 'the 40 mm square with diagonal ac parallel to XY (resting on corner c)', rest: { corner: 'c' }, tilt: { deg: 30, why: 'the diagonal ac is the steepest line of the plate, so the front view line is drawn at 30° — this makes ac inclined 30° to HP.' }, s3: { ref: ['a', 'c'], deg: 45, kind: 'true', what: 'the diagonal ac' } },
+  st => answerTable([['Apparent angle of diagonal ac in top view', f1(st.target) + '°']]), 'Module figure: β ≈ 55°.');
+addLam(9, 'Rectangle 35×20 appears square in top view', 'A rectangular lamina of side 35 mm × 20 mm rests on HP on one of its shorter edges. The lamina is rotated about the edge on which it rests till it appears as a square in the top view. The edge on which the lamina rests being parallel to both HP and VP. Draw its projections and find its inclinations to HP and VP.',
+  { shape: rectPts(35, 20).map(p => ({ n: p.n, u: p.u, v: p.v })), desc: 'the 35 × 20 rectangle abcd, shorter edge bc on the right', rest: { edge: ['b', 'c'] }, tilt: { deg: acosd(20 / 35), why: 'the top view must become a 20 × 20 square, so its 35 mm length must shrink to 20 mm: draw an arc of radius 35 from the pivot and cut it with a projector 20 mm away. cos θ = 20/35 → θ = ' + f1(acosd(20 / 35)) + '°.' }, s3: { ref: ['b', 'c'], deg: 0, kind: 'true', what: 'the resting edge bc (parallel to VP → parallel to XY)', prefer: 'front' } },
+  st => answerTable([['Inclination to HP, θ', f2(st.t) + '°'], ['Inclination to VP, φ = 90° − θ', f2(90 - st.t) + '°']]), 'Module figure: 55°.');
+addLam(10, 'Rectangle 35×20, short edge in VP at 40° HP, FV square', 'A rectangular plate of negligible thickness of size 35 × 20 mm has one of its shorter edges in VP with that edge inclined at 40° to HP. Draw the top view if its front view is a square of side 20 mm.',
+  { name: 'plate', plane: 'VP', shape: rectPts(35, 20), desc: 'the 35 × 20 rectangle abcd with shorter edge bc vertical', rest: { edge: ['b', 'c'] }, tilt: { deg: acosd(20 / 35), why: 'the front view must be a 20 mm square, so the 35 mm length must appear 20 mm: cos t = 20/35 → the plate is inclined ' + f1(acosd(20 / 35)) + '° to VP.' }, s3: { ref: ['b', 'c'], deg: 40, kind: 'true', what: 'the edge bc (it lies in VP, so its front view shows the true 40°)', prefer: 'right' } },
+  st => answerTable([['Inclination of the plate to VP', f1(st.t) + '°'], ['Edge bc to HP', '40°']]));
+const pent = s => regPoly(5, s, 180);
+addLam(11, 'Pentagon on corner, opposite edge 20 above, 45° VP', 'A pentagonal lamina of edges 25 mm is resting on HP with one of its corners such that the edge opposite to this is 20 mm above HP and makes an angle of 45° with VP. Draw the top and front views of the plane lamina in this position. Determine the inclination of the lamina with HP.',
+  { shape: regPoly(5, 25, 0), desc: 'a regular pentagon abcde of 25 mm sides with corner a pointing right', rest: { corner: 'a' }, tilt: { h: 20, of: ['c', 'd'] }, s3: { ref: ['c', 'd'], deg: 45, kind: 'true', what: 'edge cd (opposite the resting corner, parallel to HP)' } },
+  st => answerTable([['Inclination of the lamina with HP, θ', f1(st.t) + '°']]), 'Module answer: θ = 31°.');
+addLam(12, 'Pentagon on edge, opposite corner on VP, 15 above HP', 'A pentagonal lamina of sides 25 mm is resting on one of its edges on HP with the corner opposite to that edge touching VP. This edge is parallel to VP and the corner, which touches VP, is at a height of 15 mm above HP. Draw the projections of the lamina and determine the inclinations of the lamina with HP and VP and the distance at which the parallel edge lies from VP.',
+  { shape: regPoly(5, 25, 180), desc: 'a regular pentagon abcde of 25 mm sides', rest: { edge: ['b', 'c'] }, tilt: { h: 15, of: 'e' }, s3: { ref: ['b', 'c'], deg: 0, kind: 'true', what: 'the resting edge bc (parallel to VP)', prefer: 'back', touch: 'e' } },
+  st => { const d = st.st3; const b = d.find(p => p.n === 'b'); return answerTable([['Inclination with HP, θ', f1(st.t) + '°'], ['Inclination with VP', f1(90 - st.t) + '°'], ['Distance of edge bc from VP', f2(b.y) + ' mm']]); });
+addLam(13, 'Pentagon with a side on both HP and VP, corner 15 above', 'A pentagonal lamina of sides 25 mm is having a side both on HP and VP. The corner opposite to the side on which it rests is 15 mm above HP. Draw the top and front views of the lamina.',
+  { shape: regPoly(5, 25, 180), desc: 'a regular pentagon abcde of 25 mm sides', rest: { edge: ['b', 'c'] }, tilt: { h: 15, of: 'e' }, s3: { ref: ['b', 'c'], deg: 0, kind: 'true', what: 'the resting side bc (it lies on XY, touching both planes)', prefer: 'front', touch: ['b', 'c'] } },
+  st => answerTable([['Inclination with HP', f1(st.t) + '°']]));
+addLam(14, 'Pentagon on corner, opposite side on VP, 60° HP', 'A regular pentagonal lamina of 25 mm side is resting on one of its corners on HP while the side opposite to this corner touches VP. If the lamina makes an angle of 60° with HP, draw the projections of the lamina.',
+  { shape: regPoly(5, 25, 0), desc: 'a regular pentagon abcde of 25 mm sides, corner a on the right', rest: { corner: 'a' }, tilt: { deg: 60 }, s3: { ref: ['c', 'd'], deg: 0, kind: 'true', what: 'side cd (it must touch VP, so it is parallel to XY)', prefer: 'back', touch: ['c', 'd'] } });
+addLam(15, 'Pentagon on corner on VP, 30° VP, bisector appears 30° HP', 'A pentagonal lamina having edges 25 mm is placed on one of its corners on VP such that the surface makes an angle of 30° with VP and perpendicular bisector of the edge passing through the corner on which the lamina rests appears to be inclined at 30° to HP. Draw the top and front views of the lamina.',
+  { plane: 'VP', shape: regPoly(5, 25, 0), desc: 'a regular pentagon abcde of 25 mm sides, corner a on the right', rest: { corner: 'a' }, tilt: { deg: 30 }, s3: { ref: ['a', ['c', 'd']], deg: 30, kind: 'apparent', what: 'the line of symmetry through a (perpendicular bisector of cd)', prefer: 'right' } });
+const hex = s => regPoly(6, s, 0);
+addLam(16, 'Hexagon side on both planes, opposite side 45 above', 'A regular hexagonal lamina of side 30 mm is lying in such a way that one of its sides touches both the reference planes. If the side opposite to the side on which it rests is 45 mm above HP, draw the projections of the lamina.',
+  { shape: regPoly(6, 30, 30), desc: 'a regular hexagon abcdef of 30 mm sides', rest: { edge: ['a', 'f'] }, tilt: { h: 45, of: ['c', 'd'] }, s3: { ref: ['a', 'f'], deg: 0, kind: 'true', what: 'the resting side af (on XY)', prefer: 'front', touch: ['a', 'f'] } },
+  st => answerTable([['Inclination with HP', f1(st.t) + '°']]));
+addLam(17, 'Hexagon side on HP, opposite side on VP, 60° HP', 'A regular hexagonal lamina of sides 30 mm is lying in such a way that one of its sides is on HP while the side opposite to the side on which it rests is on VP. If the lamina makes 60° to HP, draw the projections of the lamina.',
+  { shape: regPoly(6, 30, 30), desc: 'a regular hexagon abcdef of 30 mm sides', rest: { edge: ['a', 'f'] }, tilt: { deg: 60 }, s3: { ref: ['a', 'f'], deg: 0, kind: 'true', what: 'the resting side af (parallel to XY)', prefer: 'back', touch: ['c', 'd'] } });
+addLam(18, 'Hexagon on corner on VP, 30° VP, diagonal 45° HP', 'A hexagonal lamina of sides 30 mm is resting with one of its corners on VP and its surface inclined at an angle of 30° with VP. The diagonal passing through the corner which is in VP is inclined at 45° to HP. Draw the projections of the lamina.',
+  { plane: 'VP', shape: regPoly(6, 30, 0), desc: 'a regular hexagon abcdef of 30 mm sides, corner a on the right with diagonal ad horizontal', rest: { corner: 'a' }, tilt: { deg: 30 }, s3: { ref: ['a', 'd'], deg: 45, kind: 'true', what: 'the diagonal ad', prefer: 'right' } },
+  st => answerTable([['Apparent angle of diagonal ad in front view, α', f1(st.target) + '°']]), 'Module figure: 55°.');
+addLam(19, 'Hexagon on corner, opposite corner 35 above, diagonal 30° VP', 'A hexagonal lamina of sides 25 mm rests on one of its corners on HP. The corner opposite to the corner on which it rests is 35 mm above HP and the diagonal passing through the corner on which it rests is inclined at 30° to VP. Draw its projections. Find the inclination of the surface with HP.',
+  { shape: regPoly(6, 25, 0), desc: 'a regular hexagon abcdef of 25 mm sides, corner a on the right', rest: { corner: 'a' }, tilt: { h: 35, of: 'd' }, s3: { ref: ['a', 'd'], deg: 30, kind: 'true', what: 'the diagonal ad' } },
+  st => answerTable([['Inclination of the surface with HP, θ', f1(st.t) + '°'], ['Apparent angle of diagonal ad in top view, β', f1(st.target) + '°']]),
+  'Module answer: β = 38°. By calculation sin β = sin 30° ÷ cos θ gives the value above — check which your teacher expects.');
+const circ8 = D => circlePts(D, 72);
+addLam(20, 'Circle Ø50, diameter 30° VP and 45° HP', 'A circular lamina of 50 mm diameter rests on HP such that one of its diameters is inclined at 30° to VP and 45° to HP. Draw its top and front views in this position.',
+  { shape: circ8(50), desc: 'a 50 mm circle; divide it into 8 equal parts (a…h) with diameter ae horizontal, resting point a', rest: { corner: 'a' }, tilt: { deg: 45, why: 'the diameter through the resting point is the steepest line, so draw the front view line at 45°.' }, s3: { ref: ['a', 'e'], deg: 30, kind: 'true', what: 'the diameter ae' } },
+  st => answerTable([['Apparent angle of diameter ae in top view, β', f2(st.target) + '°']]), 'Module answer: β = 44.99°.');
+addLam(21, 'Circle Ø50, diameter 30° VP and 45° HP (repeat)', 'A circular lamina of 50 mm diameter rests on HP such that one of its diameter is inclined at 30° to VP and 45° to HP. Draw its top and front views in this position.',
+  { shape: circ8(50), desc: 'a 50 mm circle; divide it into 8 equal parts (a…h), resting point a', rest: { corner: 'a' }, tilt: { deg: 45, why: 'the diameter through the resting point is the steepest line, so draw the front view line at 45°.' }, s3: { ref: ['a', 'e'], deg: 30, kind: 'true', what: 'the diameter ae' } },
+  st => answerTable([['Apparent angle β', f2(st.target) + '°']]), 'Module answer: β = 44.99°. (Same question as Q20.)');
+addLam(22, 'Circle on VP, diameter 30° VP and 45° HP', 'A circular lamina of 30 mm diameter rests on VP such that one of its diameter is inclined at 30° to VP and 45° to HP. Draw its top and front views in this position.',
+  { plane: 'VP', shape: circ8(30), desc: 'a 30 mm circle divided into 8 parts (a…h), resting point a', rest: { corner: 'a' }, tilt: { deg: 30, why: 'the diameter through the resting point is the line of greatest slope to VP, so draw the top view line at 30°.' }, s3: { ref: ['a', 'e'], deg: 45, kind: 'true', what: 'the diameter ae' } },
+  st => answerTable([['Apparent angle α of diameter ae in front view', f2(st.target) + '°']]), 'Module answer: β = 54.74°. (The module figure is drawn with Ø50; the question says Ø30 — the method and angle are the same.)');
+
+// ===== Module 3: Projections of solids — three-stage engine with hidden lines =====
+function v3sub(a, b) { return [a.x - b.x, a.y - b.y, a.z - b.z]; }
+function cross3(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function dot3(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+
+function solidModel(kind, n, s, H, restType) {
+  const edgeRest = restType === 'edge' || restType === 'slantFace';
+  const start = edgeRest ? 180 / n : 0;
+  const R = s / (2 * sn(180 / n));
+  const V = [];   // {n, x,y,z}
+  const base = [], top = [];
+  for (let i = 0; i < n; i++) {
+    const a = start + i * 360 / n;
+    const x = R * cs(a), yy = -R * sn(a);   // paper (x, -y) = (R cos, R sin) → y = -R sin
+    if (kind === 'prism') { base.push(V.length); V.push({ n: LBL[i] + '1', x, y: yy, z: 0 }); }
+    else { base.push(V.length); V.push({ n: LBL[i], x, y: yy, z: 0 }); }
+  }
+  let apex = -1;
+  if (kind === 'prism') for (let i = 0; i < n; i++) { top.push(V.length); V.push({ n: LBL[i], x: V[base[i]].x, y: V[base[i]].y, z: H }); }
+  else { apex = V.length; V.push({ n: 'o', x: 0, y: 0, z: H }); }
+  const faces = [];
+  faces.push(base.slice().reverse());
+  if (kind === 'prism') { faces.push(top.slice()); for (let i = 0; i < n; i++) { const j = (i + 1) % n; faces.push([base[i], base[j], top[j], top[i]]); } }
+  else for (let i = 0; i < n; i++) { const j = (i + 1) % n; faces.push([base[i], base[j], apex]); }
+  // axis points
+  const ax = kind === 'prism' ? [{ n: 'o1', x: 0, y: 0, z: 0 }, { n: 'o', x: 0, y: 0, z: H }] : [{ n: 'o1', x: 0, y: 0, z: 0 }, { n: 'o', x: 0, y: 0, z: H }];
+  // edges
+  const ek = new Map();
+  faces.forEach((f, fi) => { for (let i = 0; i < f.length; i++) { const a = f[i], b = f[(i + 1) % f.length]; const k = a < b ? a + '-' + b : b + '-' + a; if (!ek.has(k)) ek.set(k, { a: Math.min(a, b), b: Math.max(a, b), f: [] }); ek.get(k).f.push(fi); } });
+  return { V, faces, edges: [...ek.values()], ax, base, top, apex, R, rin: R * cs(180 / n), n, kind, H, s };
+}
+function faceNormals(M, V) {
+  const c = { x: 0, y: 0, z: 0 }; V.forEach(p => { c.x += p.x; c.y += p.y; c.z += p.z; }); c.x /= V.length; c.y /= V.length; c.z /= V.length;
+  return M.faces.map(f => {
+    const a = V[f[0]], b = V[f[1]], d = V[f[2]];
+    let nn = cross3(v3sub(b, a), v3sub(d, a));
+    const fc = { x: 0, y: 0, z: 0 }; f.forEach(i => { fc.x += V[i].x; fc.y += V[i].y; fc.z += V[i].z; }); fc.x /= f.length; fc.y /= f.length; fc.z /= f.length;
+    if (dot3(nn, v3sub(fc, c)) < 0) nn = nn.map(v => -v);
+    const l = Math.hypot(...nn); return nn.map(v => v / l);
+  });
+}
+
+function solidFig(cfg) {
+  const F = new Fig();
+  const M = solidModel(cfg.kind, cfg.n, cfg.s, cfg.H, cfg.rest);
+  const gap = 10;
+  // ---- stage 1: base on HP, rest element at right (x = max), placed with pivot at x=0
+  const maxX = Math.max(...M.base.map(i => M.V[i].x));
+  const dy = gap + M.R;
+  const tr1 = p => ({ n: p.n, x: p.x - maxX, y: p.y + dy, z: p.z });
+  let V1 = M.V.map(tr1), A1 = M.ax.map(tr1);
+  // pivot
+  let pivot;
+  const restEdge = (cfg.rest === 'edge' || cfg.rest === 'slantFace') ? [M.base[M.n - 1], M.base[0]] : null;
+  if (restEdge) pivot = { x: 0, y: (V1[restEdge[0]].y + V1[restEdge[1]].y) / 2, z: 0 };
+  else pivot = { x: 0, y: V1[M.base[0]].y, z: 0 };
+  // ---- tilt
+  let t, tiltCap;
+  const restName = restEdge ? (V1[restEdge[0]].n + V1[restEdge[1]].n) : V1[M.base[0]].n;
+  if (cfg.rest === 'edge' || cfg.rest === 'corner') { t = 90 - cfg.axisHP; tiltCap = `the axis makes ${cfg.axisHP}° with HP. Draw the base line of the front view at ${f1(t)}° to XY (= 90° − ${cfg.axisHP}°), or draw the axis at ${cfg.axisHP}° to XY.`; }
+  else if (cfg.rest === 'slantFace') { const del = atan2d(M.H, M.rin); t = 180 - del; tiltCap = `the slant triangular face lies ON HP: in the front view that face appears as the line from the resting edge to the apex. Turn the stage-1 front view about the right base corner until this line lies on XY (apex o′ on XY).`; }
+  else if (cfg.rest === 'slantEdge') { const eps = atan2d(M.H, M.R); t = 180 - eps; tiltCap = `the slant edge lies ON HP: turn the stage-1 front view about the right base corner until the slant edge through it lies on XY (apex o′ on XY).`; }
+  else if (cfg.rest === 'cube') { t = cfg.tiltDeg; tiltCap = cfg.tiltCap; }
+  if (cfg.tiltDeg !== undefined) { t = cfg.tiltDeg; tiltCap = cfg.tiltCap || tiltCap; }
+  const tilt = p => { const dx = p.x - pivot.x; return { n: p.n, x: pivot.x + dx * cs(t) + p.z * sn(t), y: p.y, z: -dx * sn(t) + p.z * cs(t) }; };
+  let V2 = V1.map(tilt), A2 = A1.map(tilt);
+  // fix tiny negative z
+  V2.forEach(p => { if (Math.abs(p.z) < 1e-6) p.z = 0; });
+  // ---- stage 3 rotation about vertical through pivot (or apex for slant cases)
+  const pv = (cfg.rest === 'slantFace' || cfg.rest === 'slantEdge') ? { x: V2[M.apex].x, y: V2[M.apex].y } : { x: pivot.x, y: pivot.y };
+  let refA, refB, refWhat;
+  if (cfg.ref === 'edge') { refA = V2[restEdge[0]]; refB = V2[restEdge[1]]; refWhat = `the resting edge ${restName}`; }
+  else { refA = A2[0]; refB = A2[1]; refWhat = 'the axis'; }
+  let target = cfg.deg, conv = '';
+  if (cfg.kind3 === 'true' && cfg.ref !== 'edge') {
+    const L3 = hyp(refB.x - refA.x, refB.y - refA.y, refB.z - refA.z); const thl = asind(Math.abs(refB.z - refA.z) / L3);
+    target = asind(sn(cfg.deg) / cs(thl));
+    conv = `The axis is inclined ${f1(thl)}° to HP, so its top view shows an APPARENT angle β, not the true ${cfg.deg}°. Find β by the locus method (or sin β = sin ${cfg.deg}° ÷ cos ${f1(thl)}° → β = ${f1(target)}°).`;
+  }
+  const rot2 = (q, a) => [q[0] * cs(a) - q[1] * sn(a), q[0] * sn(a) + q[1] * cs(a)];
+  const paper = p => [p.x - pv.x, -(p.y - pv.y)];
+  const a0 = atan2d(paper(refB)[1] - paper(refA)[1], paper(refB)[0] - paper(refA)[0]);
+  const cands = [target, -target, 180 - target, 180 + target].map(tg => { let r = tg - a0; while (r > 180) r -= 360; while (r <= -180) r += 360; return r; });
+  const rot3 = r => p => { const q = rot2(paper(p), r); return { n: p.n, x: pv.x + q[0], y: pv.y - q[1], z: p.z }; };
+  let best, bs = -Infinity;
+  for (const r of cands) {
+    const AA = A2.map(rot3(r));
+    const d = [AA[1].x - AA[0].x, AA[1].y - AA[0].y];
+    const VV = V2.map(rot3(r)); const cx = VV.reduce((s, p) => s + p.x, 0) / VV.length, cy = VV.reduce((s, p) => s + p.y, 0) / VV.length;
+    let sc = d[0] + 0.4 * d[1] + 0.2 * (cx - pv.x) + 0.1 * (cy - pv.y) - Math.abs(r) * 1e-4;
+    if (cfg.prefer === 'back') sc = -d[1] + 0.01 * d[0];
+    if (sc > bs) { bs = sc; best = r; }
+  }
+  let V3 = V2.map(rot3(best)), A3 = A2.map(rot3(best));
+  const mny = Math.min(...V3.map(p => p.y));
+  if (mny < gap) { const sh = gap - mny; V3 = V3.map(p => Object.assign(p, { y: p.y + sh })); A3 = A3.map(p => Object.assign(p, { y: p.y + sh })); }
+  // ---- x placement
+  const G = 44;
+  const sx = (arr, d) => arr.map(p => Object.assign({}, p, { x: p.x + d }));
+  const span = arr => [Math.min(...arr.map(p => p.x)), Math.max(...arr.map(p => p.x))];
+  let [m1, M1] = span(V1); V1 = sx(V1, -m1); A1 = sx(A1, -m1); M1 -= m1;
+  let [m2, M2] = span(V2); const o2 = M1 + G - m2; V2 = sx(V2, o2); A2 = sx(A2, o2);
+  let [m3, M3] = span(V3); const o3 = M2 + o2 + G + 4 - m3; V3 = sx(V3, o3); A3 = sx(A3, o3);
+  const xEnd = M3 + o3 + 10;
+  const FVp = p => [p.x, p.z], TVp = p => [p.x, -p.y];
+  const drawSolid = (V, A, view, isF) => {
+    const N = faceNormals(M, V);
+    const vis = N.map(nn => (isF ? nn[1] : nn[2]) > 1e-6);
+    const st = isF ? 'fv' : 'tv', sth = isF ? 'fvh' : 'tvh';
+    const hid = [], shown = [];
+    for (const e of M.edges) {
+      const a = view(V[e.a]), b = view(V[e.b]);
+      if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.05) continue;
+      if (e.f.some(fi => vis[fi])) shown.push([a, b]); else hid.push([a, b]);
+    }
+    hid.forEach(([a, b]) => F.L(a, b, sth));
+    shown.forEach(([a, b]) => F.L(a, b, st));
+    // axis
+    const pa = view(A[0]), pb = view(A[1]);
+    if (Math.hypot(pa[0] - pb[0], pa[1] - pb[1]) > 0.5) { const d = unit(sub(pb, pa)); F.L(sub(pa, mul(d, 4)), add(pb, mul(d, 4)), 'ax'); }
+    // labels
+    const all = V.map(p => ({ p: view(p), lab: isF ? P(p.n) : p.n, depth: isF ? p.y : p.z }));
+    const cen = centroid2(V.map(view));
+    const groups = clusterLabels(all, 0.8);
+    for (const g of groups) F.Lab(g.p, g.lab, awayDir(g.p, cen), st);
+  };
+  const solidName = cfg.name;
+  F.step(`Read the question: the axis is inclined to ${cfg.ref === 'edge' || cfg.rest.startsWith('slant') ? 'HP (and the solid is turned in plan)' : 'both HP and VP'}, so the ${solidName} is drawn in THREE stages. Draw XY.`).XY(-34, xEnd, 'VP', 'HP');
+  const restDesc = cfg.rest === 'edge' || cfg.rest === 'slantFace' ? `a base edge (${restName}) perpendicular to XY on the RIGHT` : `a base corner (${restName}) on the RIGHT, with the two base edges through it symmetric about a horizontal line (equal inclinations)`;
+  F.step(`STAGE 1 – Assume the ${solidName} stands on its base on HP with the axis vertical. The top view shows the base as its TRUE SHAPE: draw ${cfg.baseDesc} with ${restDesc}.${cfg.kind === 'pyramid' ? ' Join the corners to the centre o (the apex seen from above).' : ''}`);
+  drawSolid(V1, A1, TVp, false);
+  F.step(`Project the corners up and draw the stage-1 front view: ${cfg.kind === 'prism' ? `a rectangle ${cfg.H} mm high (the axis length)` : `the apex o′ ${cfg.H} mm above XY, joined to the base corners`}.`);
+  for (const p of V1) if (p.z === 0) F.L(TVp(p), [p.x, 0], 'p');
+  drawSolid(V1, A1, FVp, true);
+  F.Dim([-22, 0], [-22, cfg.H], String(cfg.H), 0);
+  // stage 2
+  const pv2 = { x: pivot.x + o2, z: 0 };
+  F.step(`STAGE 2 – Tilt the ${solidName} about the resting ${restEdge ? 'edge' : 'corner'} (kept fixed on XY). Redraw the stage-1 front view so that ${tiltCap}`);
+  drawSolid(V2, A2, FVp, true);
+  {
+    // angle mark: axis with XY
+    const pa = FVp(A2[0]), pb = FVp(A2[1]);
+    let d = sub(pb, pa); let ang = atan2d(d[1], d[0]);
+    if (Math.abs(d[1]) > 0.5) {
+      // extend axis to XY
+      const tt = -pa[1] / d[1]; const X0 = add(pa, mul(d, tt));
+      if (tt <= 0.01) { F.L(X0, pa, 'ax'); }
+      const a1 = ang < 0 ? ang + 180 : ang;
+      const thA = Math.min(a1, 180 - a1);
+      const mt = cfg.rest.startsWith('slant'); if (a1 <= 90) F.Ang(X0, 14, 0, a1, f1(thA) + '°', { tr: 7, noTool: mt }); else F.Ang(X0, 14, a1, 180, f1(thA) + '°', { tr: 7, noTool: mt });
+    }
+  }
+  F.step(`Draw horizontal lines from every corner of the stage-1 top view (distances from VP do not change while tilting), and drop projectors from the new front-view corners.`);
+  V2.forEach((p, i) => { F.L(TVp(V1[i]), TVp(p), 'g'); F.L(FVp(p), TVp(p), 'p'); });
+  F.step(`Where each projector meets its horizontal line is the new top-view corner. Join them. Edges hidden behind faces are drawn DASHED (when viewed from above, the faces turned downwards are hidden).`);
+  drawSolid(V2, A2, TVp, false);
+  // stage 3
+  let cap3 = `STAGE 3 – Turn the ${solidName} (keeping its tilt) so that ${refWhat} makes ${f1(target)}° with XY in the top view. `;
+  if (cfg.ref === 'edge') cap3 += `The resting edge lies on HP, so its top view shows the TRUE angle with VP. `;
+  else if (cfg.kind3 === 'apparent') cap3 += `“Appears inclined” means the top view of the axis itself is drawn at ${cfg.deg}°. `;
+  cap3 += conv + ' Draw that line first.';
+  const rA = cfg.ref === 'edge' ? V3[restEdge[0]] : A3[0], rB = cfg.ref === 'edge' ? V3[restEdge[1]] : A3[1];
+  F.step(cap3);
+  {
+    const pa = TVp(rA), pb = TVp(rB);
+    let d = sub(pb, pa); const L0 = len(d);
+    const dd = unit(d);
+    const e0 = sub(pa, mul(dd, 30)), e1 = add(pb, mul(dd, 10));
+    F.L(e0, e1, cfg.ref === 'edge' ? 'tv' : 'ax');
+    // angle with horizontal at intersection with a horizontal line through pa
+    let c = pa; let dir = dd[0] < 0 ? mul(dd, -1) : dd; const a = atan2d(dir[1], dir[0]);
+    const hc = sub(pa, mul(dir, 22));
+    F.L(hc, add(hc, [32, 0]), 'c');
+    F.Ang(hc, 16, Math.min(0, a), Math.max(0, a), f1(Math.abs(a)) + '°', { tr: 7 });
+  }
+  F.step(`Draw the stage-3 top view as an exact COPY of the stage-2 top view, turned to this position (transfer it with a tracing or compass). Keep the same visible and hidden edges.`);
+  drawSolid(V3, A3, TVp, false);
+  F.step(`Project every corner up, and draw horizontal lines from the stage-2 front view (heights above HP do not change when the ${solidName} is turned).`);
+  V3.forEach((p, i) => { F.L(TVp(p), FVp(p), 'p'); F.L(FVp(V2[i]), FVp(p), 'g'); });
+  F.step(`Where each projector meets its horizontal is the final front-view corner. Join them, showing hidden edges dashed. Stage 3 gives the REQUIRED front and top views.`);
+  drawSolid(V3, A3, FVp, true);
+  F.answer = answerTable([['Axis to HP', f1(cfg.rest === 'edge' || cfg.rest === 'corner' ? cfg.axisHP : atan2d(Math.abs(A2[1].z - A2[0].z), hyp(A2[1].x - A2[0].x, A2[1].y - A2[0].y))) + '°'], ['Angle drawn in the stage-3 top view', f1(target) + '°']]);
+  F._S = { V1, V2, V3, A2, A3, restEdge, M, cfg, target, t };
+  return F;
+}
+
+const polyName = n => ({ 3: 'triangular', 4: 'square', 5: 'pentagonal', 6: 'hexagonal' })[n];
+function addSolid(num, text, cfg, mod) {
+  const nm = `${polyName(cfg.n)} ${cfg.kind}`;
+  const title = text.split('.')[0].replace(/^A /, '').slice(0, 72);
+  addQ('solids', num, title, text, () => {
+    const F = solidFig(Object.assign({ name: nm, baseDesc: `the ${polyName(cfg.n)} base of ${cfg.s} mm sides` }, cfg));
+    if (mod) F.module = mod;
+    return F;
+  });
+}
+addSolid(1, 'A square prism 35 mm sides of base and 65 mm axis length rests on HP on one of its edges of the base which is inclined to VP at 30°. Draw the projections of the prism when the axis is inclined to HP at 45°.', { kind: 'prism', n: 4, s: 35, H: 65, rest: 'edge', axisHP: 45, ref: 'edge', deg: 30, kind3: 'true' });
+addSolid(2, 'A square prism 35 mm sides of base and 60 mm axis length rests on HP on one of its edges of the base. Draw the projection of the prism when the axis of the prism is inclined to HP at 45° and to VP at 30°.', { kind: 'prism', n: 4, s: 35, H: 60, rest: 'edge', axisHP: 45, ref: 'axis', deg: 30, kind3: 'true' }, 'Module figure: apparent angle of axis ≈ 41°.');
+addSolid(3, 'A square prism 35 mm sides of base and 60 mm axis length rests on HP on one of its corners of the base such that the two base edges containing the corner on which it rests make equal inclinations with HP. Draw the projections of the prism when the axis of the prism is inclined to HP at 40° and appears to be inclined to VP at 45°.', { kind: 'prism', n: 4, s: 35, H: 60, rest: 'corner', axisHP: 40, ref: 'axis', deg: 45, kind3: 'apparent' });
+addSolid(4, 'A square prism 35 mm sides of base and 60 mm axis length rests on HP on one of its base corners. Draw the projection of the prism when the axis of the prism is inclined to HP at 40° and to VP at 30°.', { kind: 'prism', n: 4, s: 35, H: 60, rest: 'corner', axisHP: 40, ref: 'axis', deg: 30, kind3: 'true' }, 'Module figure: apparent angle ≈ 41°.');
+addSolid(5, 'A pentagonal prism 25 mm sides of base and 60 mm axis length rests on HP on one of its corners of the base such that the two base edges containing the corner on which it rests make equal inclinations with HP. Draw the projections of the prism when the axis is inclined to HP at 40° and appears to be inclined to VP at 45°.', { kind: 'prism', n: 5, s: 25, H: 60, rest: 'corner', axisHP: 40, ref: 'axis', deg: 45, kind3: 'apparent' });
+addSolid(6, 'A pentagonal prism 25 mm sides of base and 60 mm axis length rests on HP on one of its base corners. Draw the projection of the prism when the axis of the prism is inclined to HP at 40° and to VP at 30°.', { kind: 'prism', n: 5, s: 25, H: 60, rest: 'corner', axisHP: 40, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(7, 'A pentagonal prism 25 mm sides of base and 60 mm axis length rests on HP on one of its edges of the base which is inclined to VP at 30°. Draw the projections of the prism when the axis is inclined to HP at 40°.', { kind: 'prism', n: 5, s: 25, H: 60, rest: 'edge', axisHP: 40, ref: 'edge', deg: 30, kind3: 'true' });
+addSolid(8, 'A pentagonal prism 25 mm sides of base and 60 mm axis length rests on HP on one of its edges of the base. Draw the projection of the prism when the axis is inclined to HP at 40° and VP at 30°.', { kind: 'prism', n: 5, s: 25, H: 60, rest: 'edge', axisHP: 40, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(9, 'A hexagonal prism 25 mm sides of base and 50 mm axis length rests on HP on one of its edges. Draw the projections of the prism when the axis is inclined to HP at 45° and appears to be inclined to VP at 40°.', { kind: 'prism', n: 6, s: 25, H: 50, rest: 'edge', axisHP: 45, ref: 'axis', deg: 40, kind3: 'apparent' });
+addSolid(10, 'A hexagonal prism 25 mm sides of base and 60 mm axis length rests on HP on one of its edges of the base. Draw the projection of the prism when the axis is inclined to HP at 40° and to VP at 30°.', { kind: 'prism', n: 6, s: 25, H: 60, rest: 'edge', axisHP: 40, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(11, 'A hexagonal prism 25 mm sides of base and 50 mm axis length rests on HP on one of its base corners. Draw the projection of the prism when the axis of the prism is inclined to HP at 45° and to VP at 30°.', { kind: 'prism', n: 6, s: 25, H: 50, rest: 'corner', axisHP: 45, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(12, 'A hexagonal prism 25 mm sides of base and 50 mm axis length rests on HP on one of its corners of the base such that the two base edges containing the corner on which it rests make equal inclinations with HP. Draw the projections of the prism when the axis is inclined to HP at 40° and appears to be inclined to VP at 45°.', { kind: 'prism', n: 6, s: 25, H: 50, rest: 'corner', axisHP: 40, ref: 'axis', deg: 45, kind3: 'apparent' });
+addSolid(13, 'A square pyramid 35 mm sides of base and 65 mm axis length rests on HP on one of its edges of the base which is inclined to VP at 30°. Draw the projections of the pyramid when the axis is inclined to HP at 45°.', { kind: 'pyramid', n: 4, s: 35, H: 65, rest: 'edge', axisHP: 45, ref: 'edge', deg: 30, kind3: 'true' });
+addSolid(14, 'A square pyramid 35 mm sides of base and 60 mm axis length rests on HP on one of its edges of the base. Draw the projection of the pyramid when the axis is inclined to HP at 45° and to VP at 30°.', { kind: 'pyramid', n: 4, s: 35, H: 60, rest: 'edge', axisHP: 45, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(15, 'A square pyramid 35 mm sides of base and 60 mm axis length rests on HP on one of its corners of the base such that the two base edges containing the corner on which it rests make equal inclinations with HP. Draw the projections of the pyramid when the axis is inclined to HP at 40° and appears to be inclined to VP at 45°.', { kind: 'pyramid', n: 4, s: 35, H: 60, rest: 'corner', axisHP: 40, ref: 'axis', deg: 45, kind3: 'apparent' });
+addSolid(16, 'A square pyramid 35 mm sides of base and 60 mm axis length rests on HP on one of its corners of the base. Draw the projection of the pyramid when the axis of the pyramid is inclined to HP at 40° and to VP at 30°.', { kind: 'pyramid', n: 4, s: 35, H: 60, rest: 'corner', axisHP: 40, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(17, 'A pentagonal pyramid 25 mm sides of base and 60 mm axis length rests on HP on one of its edges of the base which is inclined to VP at 30°. Draw the projections of the pyramid when the axis is inclined to HP at 40°.', { kind: 'pyramid', n: 5, s: 25, H: 60, rest: 'edge', axisHP: 40, ref: 'edge', deg: 30, kind3: 'true' });
+addSolid(18, 'A pentagonal pyramid 25 mm sides of base and 60 mm axis length rests on HP on one of its edges of the base. Draw the projection of the pyramid when the axis is inclined to HP at 45° and to VP at 30°.', { kind: 'pyramid', n: 5, s: 25, H: 60, rest: 'edge', axisHP: 45, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(19, 'A pentagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its corners of the base such that the two base edges containing the corner on which it rests make equal inclinations with HP. Draw the projections of the pyramid when the axis is inclined to HP at 40° and appears to be inclined to VP at 45°.', { kind: 'pyramid', n: 5, s: 25, H: 50, rest: 'corner', axisHP: 40, ref: 'axis', deg: 45, kind3: 'apparent' });
+addSolid(20, 'A pentagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its corners of the base. Draw the projection of the pyramid when the axis of the pyramid is inclined to HP at 40° and to VP at 30°.', { kind: 'pyramid', n: 5, s: 25, H: 50, rest: 'corner', axisHP: 40, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(21, 'A hexagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its edges of the base which is inclined to VP at 30°. Draw the projections of the pyramid when the axis is inclined to HP at 45°.', { kind: 'pyramid', n: 6, s: 25, H: 50, rest: 'edge', axisHP: 45, ref: 'edge', deg: 30, kind3: 'true' });
+addSolid(23, 'A hexagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its corners of the base such that the two base edges containing the corner on which it rests make equal inclinations with HP. Draw the projections of the pyramid when the axis is inclined to HP at 40° and appears to be inclined to VP at 45°.', { kind: 'pyramid', n: 6, s: 25, H: 50, rest: 'corner', axisHP: 40, ref: 'axis', deg: 45, kind3: 'apparent' });
+addSolid(24, 'A hexagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its corners of the base. Draw the projection of the pyramid when the axis of the pyramid is inclined to HP at 40° and to VP at 30°.', { kind: 'pyramid', n: 6, s: 25, H: 50, rest: 'corner', axisHP: 40, ref: 'axis', deg: 30, kind3: 'true' });
+addSolid(25, 'A square pyramid 35 mm sides of base and 60 mm axis length rests on HP on one of its slant triangular faces. Draw the projection of the pyramid when the axis is inclined to VP at 45°.', { kind: 'pyramid', n: 4, s: 35, H: 60, rest: 'slantFace', ref: 'axis', deg: 45, kind3: 'true' }, 'Module figure: apparent angle ≈ 47°.');
+addSolid(26, 'A square pyramid 35 mm sides of base and 60 mm axis length rests on HP on one of its slant edges. Draw the projection of the pyramid when the axis is inclined to VP at 45°.', { kind: 'pyramid', n: 4, s: 35, H: 60, rest: 'slantEdge', ref: 'axis', deg: 45, kind3: 'true' }, 'Module figure: apparent angle ≈ 50°.');
+addSolid(27, 'A pentagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its slant triangular faces. Draw the projection of the pyramid when the axis is inclined to VP at 45°.', { kind: 'pyramid', n: 5, s: 25, H: 50, rest: 'slantFace', ref: 'axis', deg: 45, kind3: 'true' }, 'Module figure: apparent angle ≈ 48°.');
+addSolid(28, 'A pentagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its slant edges. Draw the projection of the pyramid when the axis is inclined to VP at 45°.', { kind: 'pyramid', n: 5, s: 25, H: 50, rest: 'slantEdge', ref: 'axis', deg: 45, kind3: 'true' }, 'Module figure: apparent angle ≈ 50°.');
+addSolid(29, 'A hexagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its slant edges. Draw the projection of the pyramid when the axis appears to be inclined to VP at 45°.', { kind: 'pyramid', n: 6, s: 25, H: 50, rest: 'slantEdge', ref: 'axis', deg: 45, kind3: 'apparent' });
+addSolid(30, 'A hexagonal pyramid 25 mm sides of base and 50 mm axis length rests on HP on one of its slant triangular faces. Draw the projection of the pyramid when the axis is inclined to VP at 45°.', { kind: 'pyramid', n: 6, s: 25, H: 50, rest: 'slantFace', ref: 'axis', deg: 45, kind3: 'true' }, 'Module figure: apparent angle ≈ 50°.');
+addQ('solids', 31, 'Cube of 40 mm on an edge, edge 30° to VP, face 50° to HP', 'A cube of 40 mm sides rests on HP on an edge which is inclined to VP at 30°. Draw the projection when the lateral square face containing the edge on which it rests makes an angle of 50° to HP.', () => {
+  const F = solidFig({ name: 'cube', baseDesc: 'a 40 mm square (the cube’s base)', kind: 'prism', n: 4, s: 40, H: 40, rest: 'edge', ref: 'edge', deg: 30, kind3: 'true', tiltDeg: 40, axisHP: 50,
+    tiltCap: 'the lateral (side) face containing the resting edge makes 50° with HP. That face was vertical in stage 1, so turn the front view by 90° − 50° = 40°: the base line rises at 40° and the side face then makes 50° with XY.' });
+  F.answer = answerTable([['Side face to HP', '50°'], ['Base face to HP', '40°'], ['Resting edge to VP (top view)', '30°']]);
+  return F;
+});
+
+// ===== Module 4: Development of lateral surfaces =====
+// --- Q1 funnel
+addQ('dev', 1, 'Funnel: cylinder Ø20 + frustum to Ø80', 'Draw the development of the lateral surface of a funnel consisting of a cylinder and a frustum of a cone. The diameter of the cylinder is 20 mm and top face diameter of the funnel is 80 mm. The height of frustum and cylinder are equal to 60 mm and 40 mm respectively.', () => {
+  const F = new Fig();
+  const apz = 20, Lbig = hyp(80, 40), Lsmall = hyp(20, 10), ang = 360 * 40 / Lbig;
+  F.step('Draw XY and the front view of the funnel: cylinder B (Ø20 × 40 high) with frustum A (Ø20 at the bottom to Ø80 at the top, 60 high) on it.').XY(-62, 45, 'VP', 'HP')
+    .PL([[-10, 0], [10, 0], [10, 40], [-10, 40]], 'k', true).PL([[-10, 40], [-40, 100], [40, 100], [10, 40]], 'k', true).L([0, -3], [0, 104], 'ax')
+    .Tx([-20, 75], 'A', { bold: true }).Tx([-5, 18], 'B', { bold: true }).Dim([-40, 100], [40, 100], 'Ø80', 6).Dim([-10, 0], [10, 0], 'Ø20', -6).Dim([-50, 0], [-50, 40], '40', 0).Dim([-50, 40], [-50, 100], '60', 0);
+  const rx = 60;
+  F.step(`Cylinder B develops into a RECTANGLE: length = π × D = π × 20 = ${f2(Math.PI * 20)} mm, height = 40 mm.`)
+    .PL([[rx, 0], [rx + Math.PI * 20, 0], [rx + Math.PI * 20, 40], [rx, 40]], 'dev', true).Dim([rx, -2], [rx + Math.PI * 20, -2], f2(Math.PI * 20), -5).Tx([rx + 31.4, 22], 'B – DEVELOPMENT', { size: 's' });
+  F.step(`Frustum A is part of a cone. Extend its two slant sides down until they meet on the axis — the apex is ${apz} mm above XY. The extreme slant lines are true lengths: small cone slant = ${f2(Lsmall)} mm, full cone slant = ${f2(Lbig)} mm, so the frustum slant = ${f2(Lbig - Lsmall)} mm.`)
+    .L([-10, 40], [0, apz], 'c').L([10, 40], [0, apz], 'c').Pt([0, apz], '', 'e').Dim([0, apz], [40, 100], f2(Lbig), -10).Dim([0, apz], [10, 40], f2(Lsmall), -6).L([10, 40], [40, 100], 'c');
+  const O = [rx + 120, 110];
+  F.step(`Angle of the sector = 360° × r ÷ L = 360 × 40 ÷ ${f2(Lbig)} = ${f1(ang)}°. Mark the centre O and draw the two radii ${f1(ang)}° apart.`)
+    .L(O, polar(O, Lbig, 270 - ang / 2), 'c').L(O, polar(O, Lbig, 270 + ang / 2), 'c').Pt(O, 'O', 'n').Ang(O, 14, 270 - ang / 2, 270 + ang / 2, f1(ang) + '°', { tr: 8 });
+  F.step(`With O as centre draw two arcs: radius ${f2(Lsmall)} mm (bottom edge of the frustum) and radius ${f2(Lbig)} mm (top edge). The area between them is the development of the frustum A.`)
+    .Arc(O, Lsmall, 270 - ang / 2, 270 + ang / 2, 'dev').Arc(O, Lbig, 270 - ang / 2, 270 + ang / 2, 'dev')
+    .L(polar(O, Lsmall, 270 - ang / 2), polar(O, Lbig, 270 - ang / 2), 'dev').L(polar(O, Lsmall, 270 + ang / 2), polar(O, Lbig, 270 + ang / 2), 'dev')
+    .Tx(polar(O, (Lsmall + Lbig) / 2, 270), 'A – DEVELOPMENT', { size: 's' }).Dim(polar(O, Lsmall, 270 + ang / 2), polar(O, Lbig, 270 + ang / 2), f2(Lbig - Lsmall), 6);
+  F.answer = answerTable([['Cylinder development', f2(Math.PI * 20) + ' × 40 mm rectangle'], ['Frustum slant length', f2(Lbig - Lsmall) + ' mm'], ['Sector radii', f2(Lsmall) + ' mm and ' + f2(Lbig) + ' mm'], ['Sector angle', f1(ang) + '°']]);
+  F.module = 'Module values: 62.83, 22.36, 67.08, 161°.';
+  return F;
+});
+
+// --- generic cylinder cut by a plane ⟂ VP: zcut(x) relative to axis
+function cylDev(F, D, H, zcut, o = {}) {
+  const N = 12, r = D / 2, cyTV = -(r + 12);
+  const L12 = 'abcdefghjklm';
+  const pts = []; for (let i = 0; i < N; i++) { const a = 180 + i * 30; pts.push({ n: L12[i], x: r * cs(a), py: r * sn(a) }); }
+  // TV: paper (x, cyTV + py)
+  F.step(`Draw the top view: a circle of Ø${D}. Divide it into 12 equal parts and name the points ${L12[0]}, ${L12[1]}, … starting from the left end.`)
+    .Circ([0, cyTV], r, 'tv').L([-r - 4, cyTV], [r + 4, cyTV], 'ax').L([0, cyTV - r - 4], [0, cyTV + r + 4], 'ax');
+  pts.forEach(p => F.Pt([p.x, cyTV + p.py], p.n, awayDir([p.x, cyTV + p.py], [0, cyTV]), 'tv'));
+  F.step(`Project the points up to draw the front view: a rectangle ${D} × ${H}. Each projector is a GENERATOR (a straight line on the curved surface).`)
+    .PL([[-r, 0], [r, 0], [r, H], [-r, H]], 'fv', true).XY(-r - 30, r + 20, 'VP', 'HP');
+  pts.forEach(p => F.L([p.x, cyTV + p.py], [p.x, H], 'p'));
+  F.Dim([-r - 10, 0], [-r - 10, H], String(H), 0);
+  const zc = p => Math.max(0, Math.min(H, zcut(p.x)));
+  F.step(o.cutCap);
+  F.L([-r - 6, zcut(-r - 6)], [r + 6, Math.min(zcut(r + 6), H + 30)], 'cut');
+  if (o.cutAng) o.cutAng(F);
+  // label cut points (merge front/back pairs)
+  const seen = new Map();
+  pts.forEach((p, i) => { const key = f1(p.x); if (!seen.has(key)) seen.set(key, []); seen.get(key).push(i + 1); });
+  for (const [k, ids] of seen) { const x = +k; const z = zc({ x }); if (z > H - 0.01) continue; F.Pt([x, z], ids.map((v, j) => j ? '(' + v + '′)' : v + '′').join(''), 'nw', 'fv'); }
+  // development
+  const dx0 = r + 40, W = Math.PI * D, sp = W / N;
+  F.step(`Development: draw a rectangle of length π × D = π × ${D} = ${f2(W)} mm and height ${H} mm. Divide it into 12 equal parts (${f2(sp)} mm each) and draw the generators A, B, C, … in the same order as the top view.`)
+    .PL([[dx0, 0], [dx0 + W, 0], [dx0 + W, H], [dx0, H]], 'c', true).Dim([dx0, -6], [dx0 + W, -6], f2(W), 0);
+  for (let i = 0; i <= N; i++) { F.L([dx0 + i * sp, 0], [dx0 + i * sp, H], 'c'); F.Tx([dx0 + i * sp, -3.5], (L12[i % N] || 'a').toUpperCase(), { size: 's', dy: 0.8 }); }
+  F.step('From each cut point 1′, 2′, … in the front view, draw a horizontal line across to its own generator in the development. This marks points 1, 2, 3, … at the true heights.');
+  pts.forEach((p, i) => F.L([p.x, zc(p)], [dx0 + i * sp, zc(p)], 'g'));
+  F.L([pts[0].x, zc(pts[0])], [dx0 + W, zc(pts[0])], 'g');
+  pts.forEach((p, i) => F.Pt([dx0 + i * sp, zc(p)], String(i + 1), 'n', 'k'));
+  F.Pt([dx0 + W, zc(pts[0])], '1', 'n', 'k');
+  // smooth curve: dense sample
+  const curve = []; const M = 240;
+  for (let j = 0; j <= M; j++) { const a = 180 + j * 360 / M; const x = r * cs(a); curve.push([dx0 + j * W / M, Math.max(0, Math.min(H, zcut(x)))]); }
+  F.step('Join the points with a SMOOTH CURVE (use a French curve). Darken the outline of the remaining portion: this is the required development of the lateral surface.')
+    .PL([[dx0 + W, 0], [dx0, 0], curve[0]], 'dev').PL(curve, 'dev').L([dx0 + W, 0], curve[curve.length - 1], 'dev').Tx([dx0 + W / 2, 8], 'DEVELOPMENT', { size: 's', bold: true });
+  return { W };
+}
+addQ('dev', 2, 'Truncated cylinder Ø40 × 50, cut at 60° to the axis', 'Draw the development of the lateral surface of a truncated vertical cylinder, 40 mm diameter of base and height 50 mm, the truncated flat surface of the cylinder bisects the axis at 60° to it.', () => {
+  const F = new Fig();
+  const k = tn(30);
+  cylDev(F, 40, 50, x => 25 + k * x, {
+    cutCap: 'The cut surface makes 60° with the axis, i.e. 30° with HP, and passes through the mid-point of the axis (25 mm). Draw this cutting line in the front view and number the points where it crosses the generators 1′, 2′, 3′ …',
+    cutAng: F2 => F2.L([0, 25], [26, 25], 'c').Ang([0, 25], 14, 0, 30, '30°', { tr: 7 })
+  });
+  F.answer = answerTable([['Development length', f2(Math.PI * 40) + ' mm'], ['Lowest cut height', f2(25 - 20 * tn(30)) + ' mm'], ['Highest cut height', f2(25 + 20 * tn(30)) + ' mm']]);
+  F.module = 'Module value: 125.68 mm (π × 40 = 125.66 mm).';
+  return F;
+});
+addQ('dev', 6, 'Cylinder Ø45 × 60 cut at 50° through top centre', 'A vertical cylinder of base diameter 45 mm and axis length 60 mm is cut by a plane perpendicular to VP and inclined at 50° to HP, passing through the center point of the top face. Draw the development of the lateral surface of the cylinder.', () => {
+  const F = new Fig(); const k = tn(50);
+  cylDev(F, 45, 60, x => 60 + k * x, {
+    cutCap: 'Draw the cutting plane: it passes through the centre of the top face and makes 50° with HP. To the right of the axis it is above the cylinder, so those generators keep their full 60 mm height. Number the cut points 1′, 2′, …',
+    cutAng: F2 => F2.L([-22.5, 60 - 22.5 * k], [5, 60 - 22.5 * k], 'c').Ang([-22.5, 60 - 22.5 * k], 12, 0, 50, '50°', { tr: 7 })
+  });
+  F.answer = answerTable([['Development length', f2(Math.PI * 45) + ' mm'], ['Shortest generator', f2(60 - 22.5 * k) + ' mm'], ['Generators right of the axis', 'full 60 mm']]);
+  F.module = 'Module value: 141.36 mm.';
+  return F;
+});
+
+// --- generic prism cut by plane ⟂ VP: plan pts (paper coords x, py), zcut(x)
+function prismDev(F, plan, H, zcut, o = {}) {
+  const n = plan.length; const cy = o.cy ?? -40;
+  const tv = plan.map(p => [p.x, cy + p.py]);
+  const cx = plan.reduce((s, p) => s + p.x, 0) / n;
+  F.step(o.tvCap).PL(tv, 'tv', true);
+  plan.forEach((p, i) => F.Pt(tv[i], p.n, awayDir(tv[i], centroid2(tv)), 'tv'));
+  if (o.tvExtra) o.tvExtra(F, tv);
+  const xs = plan.map(p => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs);
+  F.step(`Project up and draw the front view: ${H} mm high. Every vertical edge of the prism appears as a vertical line.`).XY(x0 - 28, x1 + 18, 'VP', 'HP');
+  plan.forEach((p, i) => F.L(tv[i], [p.x, H], 'p'));
+  F.PL([[x0, 0], [x1, 0], [x1, H], [x0, H]], 'fv', true);
+  [...new Set(xs.map(v => f2(v)))].forEach(v => F.L([+v, 0], [+v, H], 'fv'));
+  F.Dim([x0 - 10, 0], [x0 - 10, H], String(H), 0);
+  F.step(o.cutCap);
+  F.L([x0 - 8, zcut(x0 - 8)], [x1 + 8, zcut(x1 + 8)], 'cut');
+  if (o.cutAng) o.cutAng(F);
+  const zc = x => Math.max(0, Math.min(H, zcut(x)));
+  // boundary of kept lower part along developed perimeter
+  const edgesLen = plan.map((p, i) => { const q = plan[(i + 1) % n]; return Math.hypot(q.x - p.x, q.py - p.py); });
+  const W = edgesLen.reduce((a, b) => a + b, 0);
+  const dx0 = x1 + 40;
+  const order = plan.map((p, i) => i);
+  F.step(`Development: the lateral faces unfold into a rectangle of length = perimeter = ${edgesLen.map(f2).join(' + ')} = ${f2(W)} mm and height ${H} mm. Mark the vertical edges ${plan.map(p => p.n.toUpperCase()).join(', ')}, ${plan[0].n.toUpperCase()} at the true side lengths.`)
+    .PL([[dx0, 0], [dx0 + W, 0], [dx0 + W, H], [dx0, H]], 'c', true).Dim([dx0, -6], [dx0 + W, -6], f2(W), 0);
+  let acc = 0; const ex = [];
+  for (let i = 0; i <= n; i++) { ex.push(dx0 + acc); F.L([dx0 + acc, 0], [dx0 + acc, H], 'c').Tx([dx0 + acc, -3.5], plan[i % n].n.toUpperCase(), { size: 's', dy: 0.8 }); if (i < n) acc += edgesLen[i]; }
+  // points
+  const bnd = []; let lab = 1; const labPts = [];
+  for (let i = 0; i < n; i++) {
+    const p = plan[i], q = plan[(i + 1) % n];
+    const z0 = zcut(p.x), z1 = zcut(q.x);
+    bnd.push([ex[i], zc(p.x)]); labPts.push({ pt: [ex[i], zc(p.x)], fv: [p.x, zc(p.x)], top: false });
+    // crossing of z = H (or 0) inside the face
+    for (const lev of [H, 0]) {
+      if ((z0 - lev) * (z1 - lev) < 0) {
+        const tt = (lev - z0) / (z1 - z0);
+        const X = ex[i] + tt * edgesLen[i];
+        const fx = p.x + tt * (q.x - p.x);
+        bnd.push([X, lev]); labPts.push({ pt: [X, lev], fv: [fx, lev], top: true, tv: [p.x + tt * (q.x - p.x), cy + p.py + tt * (q.py - p.py)], dist: tt * edgesLen[i] });
+      }
+    }
+  }
+  bnd.push([ex[n], zc(plan[0].x)]);
+  F.step('Mark the cut points on the front view (1′, 2′, …) where the cutting line crosses each vertical edge (or the top face), and draw horizontal lines from them to the matching edges of the development.');
+  const grp = [];
+  labPts.forEach((lp, i) => {
+    const g = grp.find(g => Math.hypot(g.p[0] - lp.fv[0], g.p[1] - lp.fv[1]) < 0.5);
+    if (g) g.ids.push(i + 1); else grp.push({ p: lp.fv, ids: [i + 1] });
+    if (!lp.top) F.L(lp.fv, lp.pt, 'g');
+  });
+  grp.forEach(g => F.Pt(g.p, g.ids.map((v, j) => j ? '(' + v + '′)' : v + '′').join(''), 'nw', 'fv'));
+  F.L(labPts[0].fv, [ex[n], labPts[0].pt[1]], 'g');
+  const tops = labPts.filter(l => l.top);
+  if (tops.length) {
+    F.step(`Some cut points lie on the TOP face, not on an edge. Find them in the top view by projecting down from the front view, and measure their distance from the nearest corner along the face (${tops.map(t => f2(t.dist)).join(' mm, ')} mm). Mark them on the top edge of the development.`);
+    tops.forEach(t => { F.L(t.fv, t.tv, 'p'); F.Pt(t.tv, '', 'e', 'tv'); });
+  }
+  F.step('Join the points with straight lines (each face is flat) and darken the outline of the remaining lower portion. This is the required development.');
+  labPts.forEach((lp, i) => F.Pt(lp.pt, String(i + 1), 'n', 'k'));
+  F.Pt([ex[n], labPts[0].pt[1]], '1', 'n', 'k');
+  for (let i = 0; i <= n; i++) F.L([ex[i], 0], [ex[i], bnd.find(b => Math.abs(b[0] - ex[i]) < 1e-6)[1]], 'dev');
+  F.PL(bnd, 'dev').L([dx0, 0], [dx0 + W, 0], 'dev').Tx([dx0 + W / 2, 8], 'DEVELOPMENT', { size: 's', bold: true });
+  return { W, tops };
+}
+addQ('dev', 4, 'Square prism 40 × 65, faces 45° to VP, cut 60°', 'A square prism of base side 40 mm and axis length 65 mm is resting on HP on its base with all the vertical faces being equally inclined to VP. It is cut by an inclined plane 60° to HP and perpendicular to VP and is passing through a point on the axis at a distance 15 mm from the top face. Draw the development of the lower portion of the prism.', () => {
+  const F = new Fig(); const d = 20 * Math.SQRT2;
+  const plan = [{ n: 'a', x: -d, py: 0 }, { n: 'b', x: 0, py: -d }, { n: 'c', x: d, py: 0 }, { n: 'd', x: 0, py: d }];
+  const r = prismDev(F, plan, 65, x => 50 + tn(60) * x, {
+    cy: -(d + 12),
+    tvCap: 'Draw the top view: a 40 mm square with all its sides at 45° to XY (faces equally inclined to VP). Name the corners a (left), b (front), c (right), d (back).',
+    cutCap: 'The cutting plane passes through the axis 15 mm below the top (65 − 15 = 50 mm above HP) and makes 60° with HP. Draw it in the front view.',
+    cutAng: F2 => F2.L([-d, 50 - tn(60) * d], [-d + 22, 50 - tn(60) * d], 'c').Ang([-d, 50 - tn(60) * d], 12, 0, 60, '60°', { tr: 7 })
+  });
+  F.answer = answerTable([['Development length', '4 × 40 = 160 mm'], ['Cut height at edge A', f2(50 - tn(60) * d) + ' mm'], ['Cut height at edges B and D', '50 mm'], ['Top-face cut points', f2(r.tops[0] ? r.tops[0].dist : 0) + ' mm from B (and from D) towards C']]);
+  F.module = 'Module figure shows 12.87 mm for the top-face points; by calculation the distance is the value above.';
+  return F;
+});
+addQ('dev', 5, 'Pentagonal prism 30 × 60, face 30° to VP, cut 60° to axis', 'A regular pentagonal prism of height 60 mm and base edge 30 mm rests with its base on HP. The vertical face closest to VP is 30° to it. Draw the development of the truncated prism with its truncated surface inclined at 60° to its axis and bisecting it.', () => {
+  const F = new Fig();
+  // pentagon with the edge nearest VP (top on paper) at 30° to XY
+  const R = 30 / (2 * sn(36));
+  // corners at 156°, 228°, 300°, 12°, 84°: edge a–e (nearest VP) rises at 30° to XY
+  const plan = [156, 228, 300, 12, 84].map((a, i) => ({ n: 'abcde'[i], x: R * cs(a), py: R * sn(a) }));
+  const r = prismDev(F, plan, 60, x => 30 + tn(30) * x, {
+    cy: -(R + 14),
+    tvCap: 'Draw the top view: a regular pentagon of 30 mm sides with side ae (the face closest to VP, nearest XY) at 30° to XY. Name the corners a (left), b, c, d and e (top).',
+    cutCap: 'The cut surface makes 60° with the axis, i.e. 30° with HP, and bisects the axis (30 mm above HP). Draw it in the front view.',
+    cutAng: F2 => F2.L([0, 30], [24, 30], 'c').Ang([0, 30], 12, 0, 30, '30°', { tr: 7 })
+  });
+  F.answer = answerTable([['Development length', '5 × 30 = 150 mm'], ['Development height', '60 mm']]);
+  F.module = 'Module value: 150 mm.';
+  return F;
+});
+addQ('dev', 7, 'Rectangular prism 40×25 × 65, side 30° to VP, cut 40°', 'A rectangular prism of base 40 mm × 25 mm and height 65 mm rests on HP on its base with the longer base side inclined at 30° to VP. It is cut by a plane inclined at 40° to HP, perpendicular to VP, which cuts the axis at its mid height. Draw the development of the remaining portion of the prism.', () => {
+  const F = new Fig();
+  const c = [[-20, -12.5], [20, -12.5], [20, 12.5], [-20, 12.5]].map(q => [q[0] * cs(30) - q[1] * sn(30), q[0] * sn(30) + q[1] * cs(30)]);
+  // corners: choose names a(left) b c d going around
+  let pts = c.map(q => ({ x: q[0], py: q[1] }));
+  // find leftmost as a, then go around such that ab = 25
+  let ia = pts.reduce((m, p, i) => p.x < pts[m].x ? i : m, 0);
+  let order = [0, 1, 2, 3].map(k => pts[(ia + k) % 4]);
+  if (order[1].py > order[0].py) order = [0, 3, 2, 1].map(k => pts[(ia + k + 4) % 4]);
+  const plan = order.map((p, i) => ({ n: 'abcd'[i], x: p.x, py: p.py }));
+  prismDev(F, plan, 65, x => 32.5 + tn(40) * x, {
+    cy: -35,
+    tvCap: 'Draw the top view: a 40 × 25 rectangle with the longer side at 30° to XY. Name the corners a (left), b (bottom), c (right), d (top), so that ab = 25 mm and bc = 40 mm.',
+    cutCap: 'The cutting plane makes 40° with HP and passes through the axis at mid-height (32.5 mm). Draw it in the front view.',
+    cutAng: F2 => F2.L([0, 32.5], [24, 32.5], 'c').Ang([0, 32.5], 12, 0, 40, '40°', { tr: 7 })
+  });
+  F.answer = answerTable([['Development length', '25 + 40 + 25 + 40 = 130 mm']]);
+  F.module = 'Module value: 130 mm.';
+  return F;
+});
+
+// --- Q3 truncated square pyramid
+addQ('dev', 3, 'Square pyramid 45 × 70 cut at 40° through axis mid-point', 'A square pyramid of side of base 45 mm, altitude 70 mm is resting with its base on HP with two sides of the base parallel to VP. The pyramid is cut by a section plane which is perpendicular to the VP and inclined at 40° to the HP. The cutting plane bisects the axis of the pyramid. Obtain the development of the lateral surfaces of the truncated pyramid.', () => {
+  const F = new Fig(); const s = 22.5, H = 70, cy = -40;
+  const corners = [{ n: 'a', x: -s, py: -s }, { n: 'b', x: s, py: -s }, { n: 'c', x: s, py: s }, { n: 'd', x: -s, py: s }];
+  const TL = hyp(s, s, H); const k = tn(40);
+  F.step('Draw the top view: a 45 mm square with sides parallel to XY. Join the corners to the centre o (apex). Name the corners a, b (front) and c, d (back).');
+  F.PL(corners.map(p => [p.x, cy + p.py]), 'tv', true); corners.forEach(p => { F.L([0, cy], [p.x, cy + p.py], 'tv'); F.Pt([p.x, cy + p.py], p.n, awayDir([p.x, cy + p.py], [0, cy]), 'tv'); }); F.Pt([0, cy], 'o', 'ne', 'tv');
+  F.step('Draw the front view: a triangle with the apex o′ 70 mm above XY. a′ and d′ coincide (left), b′ and c′ coincide (right).').XY(-50, 40, 'VP', 'HP')
+    .PL([[-s, 0], [s, 0], [0, H]], 'fv', true).Pt([0, H], P('o'), 'n', 'fv').Lab([-s, 0], "a′,d′", 'sw', 'fv').Lab([s, 0], "c′,b′", 'se', 'fv').Dim([-s - 12, 0], [-s - 12, H], '70', 0);
+  corners.forEach(p => F.L([p.x, cy + p.py], [p.x, 0], 'p'));
+  // cut
+  const sCut = dx => 35 / (H + k * dx);  // fraction along edge from apex
+  const pL = [(-s) * sCut(-s), H * (1 - sCut(-s))], pR = [s * sCut(s), H * (1 - sCut(s))];
+  F.step('The cutting plane makes 40° with HP and passes through the mid-point of the axis (35 mm). Draw it. It cuts o′a′ (= o′d′) at 1′(4′) and o′b′ (= o′c′) at 2′(3′).')
+    .L([-s - 6, 35 + k * (-s - 6)], [s + 6, 35 + k * (s + 6)], 'cut').L([0, 35], [22, 35], 'c').Ang([0, 35], 11, 0, 40, '40°', { tr: 7 })
+    .Pt(pL, '1′(4′)', 'w', 'fv').Pt(pR, '2′(3′)', 'e', 'fv');
+  const R = s * Math.SQRT2;
+  F.step(`The slant edges are not parallel to VP, so their front views are not true length. Rotate ob in the top view to ob1 (parallel to XY) and project b1 up: o′b1′ is the TRUE LENGTH of a slant edge = ${f2(TL)} mm.`)
+    .Arc([0, cy], R, -45, 0).Pt([R, cy], 'b1', 'e', 'tv').L([R, cy], [R, 0], 'p').L([0, H], [R, 0], 'tl').Pt([R, 0], 'b1′', 'se', 'fv');
+  const dL = sCut(-s) * TL, dR = sCut(s) * TL;
+  const tlAt = z => [R * (1 - z / H), z];
+  F.step(`Draw horizontal lines from 1′ and 2′ to the true-length line o′b1′. The distances from o′ along o′b1′ are the TRUE distances of the cut points from the apex: o1 = o4 = ${f2(dL)} mm, o2 = o3 = ${f2(dR)} mm.`)
+    .L(pL, tlAt(pL[1]), 'g').L(pR, tlAt(pR[1]), 'g').Pt(tlAt(pL[1]), '', 'e').Pt(tlAt(pR[1]), '', 'e');
+  // development
+  const O = [R + 75, H + 10]; const ch = 2 * asind(22.5 / TL);
+  const start = 270 - 2 * ch;
+  const rays = [0, 1, 2, 3, 4].map(i => start + i * ch);
+  const names = ['A', 'B', 'C', 'D', 'A'];
+  F.step(`Development: with O as centre and radius = true slant length ${f2(TL)} mm draw an arc. Step off the base side 45 mm four times along it (A, B, C, D, A) and join to O. These are the four triangular faces.`)
+    .Arc(O, TL, rays[0] - 3, rays[4] + 3, 'c').Pt(O, 'O', 'n');
+  rays.forEach((a, i) => { F.L(O, polar(O, TL, a), 'c').Tx(polar(O, TL + 5, a), names[i], { size: 's' }); });
+  for (let i = 0; i < 4; i++) F.L(polar(O, TL, rays[i]), polar(O, TL, rays[i + 1]), 'c');
+  const dist = [dL, dR, dR, dL, dL];
+  F.step('Mark the true distances from O on each fold line: O1 on OA, O2 on OB, O3 on OC, O4 on OD, and O1 again on the last OA.');
+  dist.forEach((d, i) => F.Pt(polar(O, d, rays[i]), String([1, 2, 3, 4, 1][i]), 'w', 'k'));
+  F.step('Join 1-2-3-4-1 with straight lines and darken the outline of the remaining lower part (between the cut line and the base edges). This is the development of the truncated pyramid.');
+  const top = dist.map((d, i) => polar(O, d, rays[i]));
+  F.PL(top, 'dev');
+  for (let i = 0; i < 4; i++) F.L(polar(O, TL, rays[i]), polar(O, TL, rays[i + 1]), 'dev');
+  rays.forEach((a, i) => F.L(top[i], polar(O, TL, a), 'dev'));
+  F.Tx(polar(O, TL - 22, 270), 'DEVELOPMENT', { size: 's', bold: true });
+  F.answer = answerTable([['True length of slant edge', f2(TL) + ' mm'], ['O1 = O4', f2(dL) + ' mm'], ['O2 = O3', f2(dR) + ' mm']]);
+  F.module = 'Module value: slant edge 76.89 mm.';
+  return F;
+});
+
+// --- Q8 cone
+addQ('dev', 8, 'Cone Ø50 × 60 cut as shown', 'A cone of base diameter 50 mm and height 60 mm is resting with its base on HP. It is cut, as shown in the following front view of which is as shown in figure. Draw the development of the lateral surface of it.', () => {
+  const F = new Fig(); const r = 25, H = 60, L = hyp(25, 60), sect = 360 * r / L, cy = -(r + 12);
+  const xs = -15, zt = 45, xt = r * (1 - zt / H);
+  const m = zt / (xt - xs); // z = m (x - xs)
+  F.note = 'The module shows the cut only in a figure. Read from it: the cut starts on the base 10 mm from the left end and meets the right extreme generator 15 mm below the apex. These values are used here.';
+  const L12 = 'abcdefghjklm';
+  const g = []; for (let i = 0; i < 12; i++) { const a = 180 + i * 30; g.push({ n: L12[i], a, x: r * cs(a), py: r * sn(a) }); }
+  F.step('Draw the top view: a Ø50 circle. Divide it into 12 equal parts (a, b, c, …) starting from the left end, and join each point to the centre (apex).');
+  F.Circ([0, cy], r, 'tv'); g.forEach(p => { F.L([0, cy], [p.x, cy + p.py], 'c'); F.Pt([p.x, cy + p.py], p.n, awayDir([p.x, cy + p.py], [0, cy]), 'tv'); });
+  F.step('Draw the front view: a triangle with the apex o′ 60 mm above XY. Project each point up to the base and join it to o′ — these are the generators.').XY(-r - 25, r + 20, 'VP', 'HP')
+    .PL([[-r, 0], [r, 0], [0, H]], 'fv', true).Pt([0, H], P('o'), 'n', 'fv').Dim([-r - 10, 0], [-r - 10, H], '60', 0).Dim([-r, -2], [xs, -2], '10', -5);
+  g.forEach(p => { F.L([p.x, cy + p.py], [p.x, 0], 'p'); F.L([p.x, 0], [0, H], 'c'); });
+  F.step('Draw the cutting line as in the figure: from the base point 10 mm from the left end up to the right extreme generator, 15 mm below the apex. The part to the RIGHT of this line is kept.')
+    .L([xs, 0], [xt, zt], 'cut');
+  const sOf = a => (H - m * (-xs)) / (H + m * r * cs(a));   // fraction from apex where generator meets plane
+  const cutGen = g.map(p => { const s = sOf(p.a); return { p, s, ok: s > 0 && s < 1 }; });
+  F.step('Mark where the cutting line crosses each generator in the front view (points on generators seen one behind another coincide). Number them along the cut.');
+  let num = 1; const ptsF = [];
+  cutGen.forEach(c => { if (c.ok) { const s = c.s; const fx = r * cs(c.p.a) * s, fz = H * (1 - s); ptsF.push({ c, fx, fz }); } });
+  const seen = new Set();
+  ptsF.forEach((q, i) => { const key = f1(q.fx); if (seen.has(key)) return; seen.add(key); F.Pt([q.fx, q.fz], '', 'e', 'fv'); });
+  F.step(`Only the extreme generators o′a′ and o′g′ show TRUE length. Draw horizontal lines from each cut point to the right extreme generator o′g′ — the distance from o′ along o′g′ is the true distance of that point from the apex.`);
+  ptsF.forEach(q => { const zz = q.fz; F.L([q.fx, zz], [r * (1 - zz / H), zz], 'g'); });
+  // development
+  const O = [r + 85, H + 15]; const a0 = 270 - sect / 2;
+  const devAng = a => { let k = ((a - 180) % 360 + 360) % 360 / 30; return a0 + k * sect / 12; };
+  F.step(`Development: the lateral surface of a cone is a SECTOR of radius = slant height ${f2(L)} mm and angle 360° × r ÷ L = 360 × 25 ÷ ${f2(L)} = ${f2(sect)}°. Draw it and divide it into 12 equal parts (A, B, C, …, A).`)
+    .Pt(O, 'O', 'n').Arc(O, L, a0, a0 + sect, 'c').L(O, polar(O, L, a0), 'c').L(O, polar(O, L, a0 + sect), 'c').Ang(O, 9, a0, a0 + sect, f2(sect) + '°', { tr: 7, tangle: 90 });
+  for (let i = 0; i <= 12; i++) { const a = a0 + i * sect / 12; F.L(O, polar(O, L, a), 'c'); F.Tx(polar(O, L + 5, a), L12[i % 12].toUpperCase(), { size: 's' }); }
+  F.step('Mark the true distances from O on the matching generators of the development (OC, OD, …). Also mark the two points where the cut meets the base circle.');
+  ptsF.forEach(q => F.Pt(polar(O, q.c.s * L, devAng(q.c.p.a)), '', 'e'));
+  const aB = acosd(xs / r); // kept base arc: paper angles 360-aB … 360+aB
+  F.Pt(polar(O, L, devAng(360 - aB)), '', 'e').Pt(polar(O, L, devAng(360 + aB)), '', 'e');
+  const curve = []; const steps = 160;
+  for (let j = 0; j <= steps; j++) { const a = (360 - aB) + j * (2 * aB) / steps; const s = Math.min(1, sOf(a)); curve.push(polar(O, s * L, devAng(a))); }
+  const arcA = devAng(360 - aB);
+  F.step('Join the points with a SMOOTH curve, and darken the base arc between the two end points. This is the development of the remaining part of the cone.')
+    .PL(curve, 'dev').Arc(O, L, arcA, arcA + (2 * aB) / 30 * sect / 12, 'dev').Tx(polar(O, L * 0.62, 270), 'DEVELOPMENT', { size: 's', bold: true });
+  F.answer = answerTable([['Slant height', f2(L) + ' mm'], ['Sector angle', f2(sect) + '°']]);
+  F.module = 'Module value: sector angle 138.46°.';
+  return F;
+});
+
+// ===== Module 5: Isometric projections =====
+const ISOK = Math.sqrt(2 / 3);
+const ISO = p => [(p[0] - p[1]) / Math.SQRT2, (2 * p[2] - p[0] - p[1]) / Math.sqrt(6)];
+const isoL = v => f1(v * ISOK);
+function hull2(P) {
+  const pts = P.map(p => [p[0], p[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (pts.length < 3) return pts;
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], up = [];
+  for (const p of pts) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+  for (let i = pts.length - 1; i >= 0; i--) { const p = pts[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+  up.pop(); lo.pop(); return lo.concat(up);
+}
+const circ3 = (cx, cy, z, r, N = 96) => { const o = []; for (let i = 0; i < N; i++) { const a = i * 360 / N; o.push([cx + r * cs(a), cy + r * sn(a), z]); } return o; };
+const polyPlan = (n, s, rot = 0, cx = 0, cy = 0) => { const R = s / (2 * sn(180 / n)); const o = []; for (let i = 0; i < n; i++) { const a = rot + i * 360 / n; o.push([cx + R * cs(a), cy + R * sn(a)]); } return o; };
+const sqPlan = (a, b = a) => [[-a / 2, -b / 2], [a / 2, -b / 2], [a / 2, b / 2], [-a / 2, b / 2]];
+function polyhedronFromPlans(planB, zB, planT, zT) {
+  const V = [], n = planB.length;
+  planB.forEach(p => V.push([p[0], p[1], zB]));
+  if (planT) planT.forEach(p => V.push([p[0], p[1], zT]));
+  const faces = [[...Array(n).keys()].reverse()];
+  if (planT) { faces.push([...Array(n).keys()].map(i => i + n)); for (let i = 0; i < n; i++) { const j = (i + 1) % n; faces.push([i, j, j + n, i + n]); } }
+  return { type: 'poly', V, faces };
+}
+function pyramid3(planB, zB, apex) { const P = polyhedronFromPlans(planB, zB); const n = planB.length; P.V.push(apex); for (let i = 0; i < n; i++) P.faces.push([i, (i + 1) % n, n]); return P; }
+function drawIso(F, S) {
+  if (S.type === 'poly') {
+    const pp = S.V.map(ISO); F.Fill(hull2(pp));
+    const c = [0, 0, 0]; S.V.forEach(v => { c[0] += v[0]; c[1] += v[1]; c[2] += v[2]; }); c.forEach((v, i) => c[i] = v / S.V.length);
+    const drawn = new Set();
+    S.faces.forEach(f => {
+      const a = S.V[f[0]], b = S.V[f[1]], d = S.V[f[2]];
+      let nn = cross3([b[0] - a[0], b[1] - a[1], b[2] - a[2]], [d[0] - a[0], d[1] - a[1], d[2] - a[2]]);
+      const fc = [0, 0, 0]; f.forEach(i => { fc[0] += S.V[i][0]; fc[1] += S.V[i][1]; fc[2] += S.V[i][2]; }); fc.forEach((v, i) => fc[i] = v / f.length);
+      if (dot3(nn, [fc[0] - c[0], fc[1] - c[1], fc[2] - c[2]]) < 0) nn = nn.map(v => -v);
+      if (nn[0] + nn[1] + nn[2] > 1e-9) for (let i = 0; i < f.length; i++) { const u = f[i], w = f[(i + 1) % f.length]; const k = Math.min(u, w) + '-' + Math.max(u, w); if (!drawn.has(k)) { drawn.add(k); F.L(pp[u], pp[w], 'k'); } }
+    });
+  } else if (S.type === 'cyl' || S.type === 'cfr') {
+    const b = circ3(S.c[0], S.c[1], S.z0, S.r1).map(ISO), t = circ3(S.c[0], S.c[1], S.z0 + S.h, S.r2).map(ISO);
+    const h = hull2(b.concat(t)); F.Fill(h).PL(h, 'k', true).PL(t, 'k', true);
+  } else if (S.type === 'cone') {
+    const b = circ3(S.c[0], S.c[1], S.z0, S.r).map(ISO); const ap = ISO([S.c[0], S.c[1], S.z0 + S.h]);
+    const h = hull2(b.concat([ap])); F.Fill(h).PL(h, 'k', true);
+  } else if (S.type === 'sph') {
+    const c = ISO(S.c); const pts = []; for (let i = 0; i < 96; i++) pts.push(polar(c, S.r, i * 3.75));
+    F.Fill(pts).Circ(c, S.r, 'k');
+  } else if (S.type === 'hemi') {
+    const rim = circ3(S.c[0], S.c[1], S.zr, S.r).map(ISO);
+    const low = []; for (let i = 0; i < 24; i++) for (let j = 1; j <= 12; j++) { const ph = j * 7.5, a = i * 15; low.push(ISO([S.c[0] + S.r * sn(ph) * cs(a), S.c[1] + S.r * sn(ph) * sn(a), S.zr - S.r * cs(ph)])); }
+    const c = ISO([S.c[0], S.c[1], S.zr]);
+    // outline: lower half of the true circle of radius r about the rim centre + rim ellipse
+    const outl = []; for (let i = 0; i <= 96; i++) outl.push(polar(c, S.r, 180 + i * 180 / 96));
+    const h = hull2(rim.concat(outl)); F.Fill(h).PL(outl, 'k').PL(rim, 'k', true);
+  }
+}
+// enclosing iso square (box construction) for a horizontal circle
+function isoBoxCircle(F, cx, cy, z, r) {
+  const sq = [[cx - r, cy - r, z], [cx + r, cy - r, z], [cx + r, cy + r, z], [cx - r, cy + r, z]].map(ISO);
+  F.PL(sq, 'c', true).L(ISO([cx - r, cy, z]), ISO([cx + r, cy, z]), 'c').L(ISO([cx, cy - r, z]), ISO([cx, cy + r, z]), 'c');
+}
+function isoStart(F, origin3, cap) {
+  const o = ISO(origin3);
+  F.step(cap || 'Draw a horizontal reference line and, from a point on it, the three isometric axes: one vertical and two at 30° to the horizontal. All true lengths are reduced to ISOMETRIC LENGTHS (× 0.816) using the isometric scale.')
+    .L([o[0] - 70, o[1]], [o[0] + 70, o[1]], 'thin')
+    .L(o, add(o, mul([cs(30), sn(30)], 60)), 'c').L(o, add(o, mul([-cs(30), sn(30)], 60)), 'c').L(o, add(o, [0, 60]), 'c')
+    .Ang(o, 18, 0, 30, '30°', { tr: 6 }).Ang(o, 18, 150, 180, '30°', { tr: 6 });
+}
+function addIso(num, title, text, build) { addQ('iso', num, title, text, () => { const F = new Fig(); build(F); return F; }); }
+
+addIso(1, 'Three slabs 100 long, widths 60/40/20, 20 thick', 'Three rectangular slabs (l × b × h) 100 mm × 60 mm × 20 mm, 100 mm × 40 mm × 20 mm and 100 mm × 20 mm × 20 mm are placed one above the other in the descending order of their width-b, such that their longer axes are coplanar. Draw the isometric projection of the combination.', F => {
+  isoStart(F, [50, 30, 0]);
+  F.step(`Bottom slab 100 × 60 × 20: isometric lengths ${isoL(100)} × ${isoL(60)} × ${isoL(20)} mm. Draw the iso box.`); drawIso(F, polyhedronFromPlans(sqPlan(100, 60), 0, sqPlan(100, 60), 20));
+  F.Dim(ISO([-50, 30, 0]), ISO([50, 30, 0]), 'ISO 100', -8);
+  F.step(`Middle slab 100 × 40 × 20 sits centrally on it (10 mm in from each long edge): iso ${isoL(100)} × ${isoL(40)} × ${isoL(20)}.`); drawIso(F, polyhedronFromPlans(sqPlan(100, 40), 20, sqPlan(100, 40), 40));
+  F.step(`Top slab 100 × 20 × 20 sits centrally on the middle slab: iso ${isoL(100)} × ${isoL(20)} × ${isoL(20)}. Darken the visible edges only.`); drawIso(F, polyhedronFromPlans(sqPlan(100, 20), 40, sqPlan(100, 20), 60));
+  F.answer = 'Isometric lengths: 100 → ' + isoL(100) + ' mm, 60 → ' + isoL(60) + ' mm, 40 → ' + isoL(40) + ' mm, 20 → ' + isoL(20) + ' mm.';
+});
+addIso(2, 'Three cubes 60, 40, 20 stacked centrally', 'Three cubes of sides 60 mm, 40 mm and 20 mm are placed centrally one above the other in the descending order of their side. Draw the isometric projection of the combination.', F => {
+  isoStart(F, [30, 30, 0]);
+  F.step(`60 mm cube: iso length ${isoL(60)} mm on all three axes.`); drawIso(F, polyhedronFromPlans(sqPlan(60), 0, sqPlan(60), 60)); F.Dim(ISO([30, 30, 0]), ISO([30, 30, 60]), 'ISO 60', -8);
+  F.step(`40 mm cube placed centrally on its top (10 mm in from every edge): iso ${isoL(40)} mm.`); drawIso(F, polyhedronFromPlans(sqPlan(40), 60, sqPlan(40), 100));
+  F.step(`20 mm cube placed centrally on the 40 mm cube: iso ${isoL(20)} mm. Only visible edges are drawn.`); drawIso(F, polyhedronFromPlans(sqPlan(20), 100, sqPlan(20), 120));
+  F.answer = 'Iso lengths: 60 → ' + isoL(60) + ', 40 → ' + isoL(40) + ', 20 → ' + isoL(20) + ' mm.';
+});
+addIso(3, 'Triangular prism on a 70 × 70 × 25 slab', 'A triangular prism base side 30 mm and length 70 mm is resting on its rectangular face on top of a square slab side 70 mm and 25 mm thick. Draw the isometric projection of the combination.', F => {
+  isoStart(F, [35, 35, 0]);
+  F.step(`Square slab 70 × 70 × 25: iso ${isoL(70)} × ${isoL(70)} × ${isoL(25)}.`); drawIso(F, polyhedronFromPlans(sqPlan(70), 0, sqPlan(70), 25)); F.Dim(ISO([35, 35, 0]), ISO([35, 35, 25]), 'ISO 25', -8);
+  const h = 30 * sn(60);
+  F.step(`Triangular prism, 70 long, lying on a rectangular face along the middle of the slab. Its end triangle (30 mm sides, height ${f2(h)} mm) is drawn with offsets: base 30 → iso ${isoL(30)}, height → iso ${isoL(h)}.`);
+  const V = [[-35, -15, 25], [-35, 15, 25], [-35, 0, 25 + h], [35, -15, 25], [35, 15, 25], [35, 0, 25 + h]];
+  drawIso(F, { type: 'poly', V, faces: [[0, 1, 2], [3, 5, 4], [0, 3, 4, 1], [1, 4, 5, 2], [0, 2, 5, 3]] });
+  F.answer = 'Iso lengths: 70 → ' + isoL(70) + ', 30 → ' + isoL(30) + ', 25 → ' + isoL(25) + ' mm.';
+});
+addIso(4, 'Sphere Ø60 on a 60 × 60 × 70 prism', 'A sphere of diameter 60 mm is placed centrally on the top face of a square prism side 60 mm and height 70 mm. Draw the isometric projection of the combination.', F => {
+  isoStart(F, [30, 30, 0]);
+  F.step(`Square prism 60 × 60 × 70: iso ${isoL(60)} × ${isoL(60)} × ${isoL(70)}.`); drawIso(F, polyhedronFromPlans(sqPlan(60), 0, sqPlan(60), 70)); F.Dim(ISO([30, 30, 0]), ISO([30, 30, 70]), 'ISO 70', -8);
+  F.step(`Locate the centre of the top face (point of contact). The sphere's centre is above it by the ISO radius ${isoL(30)} mm.`).Pt(ISO([0, 0, 70]), 'P', 'se').L(ISO([0, 0, 70]), ISO([0, 0, 100]), 'ax').Pt(ISO([0, 0, 100]), 'C', 'e');
+  F.step('In isometric PROJECTION a sphere is drawn with its TRUE radius (30 mm) about C — not the iso radius.'); drawIso(F, { type: 'sph', c: [0, 0, 100], r: 30 });
+  F.answer = 'Sphere drawn with true radius 30 mm; its centre is ' + isoL(30) + ' mm (iso radius) above the top-face centre.';
+});
+addIso(5, 'Hemisphere Ø50 on a 60 × 60 × 30 prism', 'A hemisphere of diameter 50 mm is centrally resting on top of a square prism of base side 60 mm and height 30 mm such that the curved surface of hemisphere is touching the top face of the prism. Draw its isometric projections.', F => {
+  isoStart(F, [30, 30, 0]);
+  F.step(`Square prism 60 × 60 × 30: iso ${isoL(60)} × ${isoL(60)} × ${isoL(30)}.`); drawIso(F, polyhedronFromPlans(sqPlan(60), 0, sqPlan(60), 30));
+  F.step(`The curved surface touches the top face at its centre, so the flat face is ${isoL(25)} mm (iso of 25) higher. Draw the isometric square around the Ø50 flat face at that level to construct its ellipse.`); isoBoxCircle(F, 0, 0, 55, 25);
+  F.step('Draw the flat face as an ellipse inside the iso square, and the curved part as a TRUE-radius (25 mm) semicircle below it.'); drawIso(F, { type: 'hemi', c: [0, 0], zr: 55, r: 25 });
+  F.answer = 'Flat face is ' + isoL(25) + ' mm (iso) above the prism top; curved outline radius = true 25 mm.';
+});
+addIso(6, 'Hexagonal prism (40, h60) with cone Ø40 h50 on top', 'Draw the isometric projection of a hexagonal prism of side of base 40 mm and height 60 mm with a right circular cone of base 40 mm diameter and altitude 50 mm, resting on its top such that the axes of both the solids are collinear.', F => {
+  const hx = polyPlan(6, 40, 0);
+  isoStart(F, [40, 0, 0], 'Draw the isometric axes. A hexagon is drawn in isometric using its enclosing rectangle (80 × 69.28) — mark its corners by offsets measured with the isometric scale.');
+  F.step(`Hexagonal prism: hexagon of 40 mm sides (across corners 80, across flats ${f2(69.28)}), height 60 → iso ${isoL(60)}.`); drawIso(F, polyhedronFromPlans(hx, 0, hx, 60));
+  F.step('On the top face draw the iso square around the Ø40 base of the cone to construct its ellipse.'); isoBoxCircle(F, 0, 0, 60, 20);
+  F.step(`Cone apex is ${isoL(50)} mm (iso of 50) above the top-face centre. Draw tangents from the apex to the ellipse.`); drawIso(F, { type: 'cone', c: [0, 0], z0: 60, r: 20, h: 50 });
+  F.answer = 'Iso lengths: 60 → ' + isoL(60) + ', 50 → ' + isoL(50) + ' mm.';
+});
+addIso(7, 'Square pyramid on cube on cylinder', 'A square pyramid of base side 40 mm and height 70 mm rests symmetrically on a cube of side 50 mm, which itself is placed on a cylinder of diameter 80 mm and thickness 30 mm. Draw the isometric projection of the solids, if the axes of the three solids are in common line.', F => {
+  isoStart(F, [40, 40, 0], 'Draw the isometric axes. Start with the iso square around the Ø80 cylinder base.');
+  isoBoxCircle(F, 0, 0, 0, 40);
+  F.step(`Cylinder Ø80 × 30: draw the bottom and top ellipses (top raised ${isoL(30)} mm) and the two vertical tangent lines.`); drawIso(F, { type: 'cyl', c: [0, 0], z0: 0, r1: 40, r2: 40, h: 30 });
+  F.step(`Cube 50 mm centrally on the cylinder: iso ${isoL(50)} mm each way.`); drawIso(F, polyhedronFromPlans(sqPlan(50), 30, sqPlan(50), 80));
+  F.step(`Square pyramid 40 mm base centrally on the cube, apex ${isoL(70)} mm (iso of 70) above the cube top centre.`); drawIso(F, pyramid3(sqPlan(40), 80, [0, 0, 150]));
+  F.answer = 'Iso lengths: 30 → ' + isoL(30) + ', 50 → ' + isoL(50) + ', 40 → ' + isoL(40) + ', 70 → ' + isoL(70) + ' mm.';
+});
+addIso(8, 'Sphere Ø30 on hexagonal frustum (30/18, h50)', 'A sphere of diameter 30 mm rests on the frustum of a hexagonal pyramid of base 30 mm, top face 18 mm side and height 50 mm, such that their axes coincide. Draw the isometric projection of the combined solids.', F => {
+  isoStart(F, [30, 0, 0]);
+  F.step(`Hexagonal frustum: base hexagon of 30 mm sides, top hexagon of 18 mm sides, ${isoL(50)} mm (iso of 50) higher. Join corresponding corners.`); drawIso(F, polyhedronFromPlans(polyPlan(6, 30, 0), 0, polyPlan(6, 18, 0), 50));
+  F.step(`The sphere touches the top face at its centre; its centre is ${isoL(15)} mm (iso radius) above. Draw it with the TRUE radius 15 mm.`).L(ISO([0, 0, 50]), ISO([0, 0, 65]), 'ax'); drawIso(F, { type: 'sph', c: [0, 0, 65], r: 15 });
+  F.answer = 'Iso lengths: 50 → ' + isoL(50) + ', 15 → ' + isoL(15) + ' mm; sphere radius drawn true (15 mm).';
+});
+addIso(9, 'Hemisphere Ø40 on the vertex of a cone Ø60 × 50', 'A hemisphere of 40 mm diameter is supported co-axially on the vertex of a cone of base diameter 60 mm and axis length 50 mm. The flat circular face of the hemisphere is facing upside. Draw the isometric projection of the combination of solids.', F => {
+  isoStart(F, [30, 30, 0], 'Draw the isometric axes and the iso square around the Ø60 cone base.'); isoBoxCircle(F, 0, 0, 0, 30);
+  F.step(`Cone: ellipse for the base, apex ${isoL(50)} mm (iso of 50) above the centre, tangents from the apex.`); drawIso(F, { type: 'cone', c: [0, 0], z0: 0, r: 30, h: 50 });
+  F.step(`The hemisphere touches the apex with its curved surface, so its flat face is ${isoL(20)} mm (iso of 20) above the apex. Draw the iso square for its Ø40 flat face.`); isoBoxCircle(F, 0, 0, 70, 20);
+  F.step('Draw the flat face ellipse and the curved part with TRUE radius 20 mm.'); drawIso(F, { type: 'hemi', c: [0, 0], zr: 70, r: 20 });
+  F.answer = 'Iso lengths: 50 → ' + isoL(50) + ', 20 → ' + isoL(20) + ' mm.';
+});
+addIso(10, 'Cone Ø70 × 70 on a hemisphere Ø70', 'A hemisphere diameter 70 mm is placed on the ground on its curved surface. A cone base diameter 70 mm and height 70 mm is placed centrally on it. Draw the isometric projection of the combination.', F => {
+  isoStart(F, [0, 0, 0], 'Draw the isometric axes from the lowest point of the hemisphere. Its flat face is ' + isoL(35) + ' mm (iso radius) above the ground.');
+  isoBoxCircle(F, 0, 0, 35, 35);
+  F.step('Hemisphere: ellipse for the flat face, and a TRUE-radius (35 mm) semicircle below it.'); drawIso(F, { type: 'hemi', c: [0, 0], zr: 35, r: 35 });
+  F.step(`Cone on the flat face: apex ${isoL(70)} mm (iso of 70) above the centre; draw tangents to the ellipse.`); drawIso(F, { type: 'cone', c: [0, 0], z0: 35, r: 35, h: 70 });
+  F.answer = 'Iso lengths: 35 → ' + isoL(35) + ', 70 → ' + isoL(70) + ' mm.';
+});
+addIso(11, 'Cone frustum Ø50/Ø25 × 50 on an 80 × 80 × 30 slab', 'A frustum of cone base diameter 50 mm, top diameter 25 mm and height 50 mm is placed centrally on a square slab side 80 mm and thickness 30 mm. Draw the isometric projection.', F => {
+  isoStart(F, [40, 40, 0]);
+  F.step(`Square slab 80 × 80 × 30: iso ${isoL(80)} × ${isoL(80)} × ${isoL(30)}.`); drawIso(F, polyhedronFromPlans(sqPlan(80), 0, sqPlan(80), 30));
+  F.step('Draw the iso squares for the Ø50 base (on the slab top) and the Ø25 top (raised ' + isoL(50) + ' mm).'); isoBoxCircle(F, 0, 0, 30, 25); isoBoxCircle(F, 0, 0, 80, 12.5);
+  F.step('Draw both ellipses and the two tangent lines joining them.'); drawIso(F, { type: 'cfr', c: [0, 0], z0: 30, r1: 25, r2: 12.5, h: 50 });
+  F.answer = 'Iso lengths: 80 → ' + isoL(80) + ', 30 → ' + isoL(30) + ', 50 → ' + isoL(50) + ' mm.';
+});
+addIso(12, 'Pentagonal prism (30, h60) on cylinder Ø80 × 25', 'A regular pentagonal prism of base edge 30 mm and axis 60 mm is mounted centrally over a cylindrical block of 80 mm diameter and 25 mm thick. Draw isometric projection of the combined solids.', F => {
+  isoStart(F, [40, 40, 0], 'Draw the isometric axes and the iso square around the Ø80 base.'); isoBoxCircle(F, 0, 0, 0, 40);
+  F.step(`Cylinder Ø80 × 25: two ellipses ${isoL(25)} mm apart and vertical tangents.`); drawIso(F, { type: 'cyl', c: [0, 0], z0: 0, r1: 40, r2: 40, h: 25 });
+  F.step(`Pentagonal prism: draw the pentagon (30 mm sides) on the cylinder top by offsets, then raise every corner ${isoL(60)} mm (iso of 60).`); const pp = polyPlan(5, 30, 18); drawIso(F, polyhedronFromPlans(pp, 25, pp, 85));
+  F.answer = 'Iso lengths: 25 → ' + isoL(25) + ', 60 → ' + isoL(60) + ' mm.';
+});
+addIso(13, 'Pentagonal prism (40, h60) with cone Ø40 × 50 on top', 'Draw isometric projections of a pentagonal prism of sides of base 40 mm and height 60 mm with a right circular cone of base 40 mm as diameter and altitude 50 mm, resting on its top such that the axes of both the solids are collinear.', F => {
+  const pp = polyPlan(5, 40, 18);
+  isoStart(F, [40, 0, 0]);
+  F.step(`Pentagonal prism: pentagon of 40 mm sides by offsets, height ${isoL(60)} mm (iso of 60).`); drawIso(F, polyhedronFromPlans(pp, 0, pp, 60));
+  F.step('Iso square for the cone base Ø40 at the centre of the top face.'); isoBoxCircle(F, 0, 0, 60, 20);
+  F.step(`Cone: base ellipse, apex ${isoL(50)} mm (iso of 50) above, tangents.`); drawIso(F, { type: 'cone', c: [0, 0], z0: 60, r: 20, h: 50 });
+  F.answer = 'Iso lengths: 60 → ' + isoL(60) + ', 50 → ' + isoL(50) + ' mm.';
+});
+addIso(14, 'Cone Ø40 × 50 on pentagonal frustum (45/35, h55)', 'A cone of base diameter 40 mm and height 50 mm rests centrally over a frustum of a pentagonal pyramid of base side 45 mm and top side 35 mm and height 55 mm. Draw its isometric projections.', F => {
+  isoStart(F, [40, 0, 0]);
+  F.step(`Pentagonal frustum: base pentagon 45 mm sides, top pentagon 35 mm sides raised ${isoL(55)} mm (iso of 55). Join corresponding corners.`); drawIso(F, polyhedronFromPlans(polyPlan(5, 45, 18), 0, polyPlan(5, 35, 18), 55));
+  F.step('Iso square for the Ø40 cone base on the top face.'); isoBoxCircle(F, 0, 0, 55, 20);
+  F.step(`Cone: ellipse, apex ${isoL(50)} mm (iso of 50) above the centre, tangents.`); drawIso(F, { type: 'cone', c: [0, 0], z0: 55, r: 20, h: 50 });
+  F.answer = 'Iso lengths: 55 → ' + isoL(55) + ', 50 → ' + isoL(50) + ' mm.';
+});
+addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 45 mm rests centrally over a frustum of cone of base diameter 60 mm, top diameter 40 mm and height 60 mm. Draw its isometric projections.', F => {
+  isoStart(F, [30, 30, 0], 'Draw the isometric axes and the iso squares for the Ø60 base and the Ø40 top (raised ' + isoL(60) + ' mm).'); isoBoxCircle(F, 0, 0, 0, 30); isoBoxCircle(F, 0, 0, 60, 20);
+  F.step('Frustum: both ellipses and the tangent lines.'); drawIso(F, { type: 'cfr', c: [0, 0], z0: 0, r1: 30, r2: 20, h: 60 });
+  F.step(`The sphere touches the top face at its centre; its centre is ${isoL(22.5)} mm (iso of 22.5) higher. Draw it with the TRUE radius 22.5 mm.`).L(ISO([0, 0, 60]), ISO([0, 0, 82.5]), 'ax'); drawIso(F, { type: 'sph', c: [0, 0, 82.5], r: 22.5 });
+  F.answer = 'Iso lengths: 60 → ' + isoL(60) + ', 22.5 → ' + isoL(22.5) + ' mm; sphere radius drawn true.';
+});
+
+(function () {
+  const MODS = [
+    { id: 'points', name: 'Points', full: 'Projections of points' },
+    { id: 'lines', name: 'Lines', full: 'Projections of lines' },
+    { id: 'planes', name: 'Planes', full: 'Projections of planes' },
+    { id: 'solids', name: 'Solids', full: 'Projections of solids' },
+    { id: 'dev', name: 'Develop', full: 'Development of surfaces' },
+    { id: 'iso', name: 'Isometric', full: 'Isometric projections' }];
+  const modName = id => MODS.find(m => m.id === id);
+  const $ = id => document.getElementById(id);
+  let curMod = 'points', curQ = null, fig = null, step = 0, timer = null, query = '', hideCon = false;
+  const cache = new Map();
+  const getFig = q => { if (!cache.has(q.id)) cache.set(q.id, deferAngles(q.build())); return cache.get(q.id); };
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
+  $('count').textContent = QS.length + ' questions · 6 topics';
+  // module buttons
+  MODS.forEach(m => { const b = document.createElement('button'); b.type = 'button'; b.textContent = m.name; b.dataset.m = m.id; b.addEventListener('click', () => { curMod = m.id; query = ''; $('search').value = ''; renderList(); const first = QS.find(q => q.mod === m.id); openQ(first, true); }); $('mods').appendChild(b); });
+  function visibleQs() {
+    if (query) { const t = query.toLowerCase(); return QS.filter(q => (q.text + ' ' + q.title + ' ' + modName(q.mod).name).toLowerCase().includes(t)); }
+    return QS.filter(q => q.mod === curMod);
+  }
+  function renderList() {
+    document.querySelectorAll('#mods button').forEach(b => b.setAttribute('aria-pressed', String(!query && b.dataset.m === curMod)));
+    const ul = $('qlist'); ul.innerHTML = '';
+    const qs = visibleQs();
+    if (!qs.length) { ul.innerHTML = '<li class="empty">No question matches. Try a shape (hexagon) or an angle (30°).</li>'; }
+    qs.forEach(q => {
+      const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button';
+      b.innerHTML = `<span class="qn">Q${q.num}</span><span>${query ? `<span class="mtag">${modName(q.mod).name}</span>` : ''}${esc(q.title)}</span>`;
+      if (curQ && q.id === curQ.id) b.setAttribute('aria-current', 'true');
+      b.addEventListener('click', () => openQ(q, true)); li.appendChild(b); ul.appendChild(li);
+    });
+    const sel = $('qsel'); sel.innerHTML = '';
+    QS.filter(q => q.mod === curMod).forEach(q => { const o = document.createElement('option'); o.value = q.id; o.textContent = `Q${q.num} · ${q.title}`; sel.appendChild(o); });
+    if (curQ && curQ.mod === curMod) sel.value = curQ.id;
+  }
+  $('qsel').addEventListener('change', e => openQ(QS.find(q => q.id === e.target.value), true));
+  $('search').addEventListener('input', e => { query = e.target.value.trim(); renderList(); });
+  function openQ(q, push) {
+    if (!q) return; stop();
+    curQ = q; curMod = q.mod; fig = getFig(q); step = 0;
+    $('eyebrow').textContent = `${modName(q.mod).full} · Q ${q.num}`;
+    $('qtext').textContent = q.text;
+    $('answer').innerHTML = fig.answer || '';
+    $('module').innerHTML = fig.module ? `<div class="module">${fig.module}</div>` : '';
+    $('note').innerHTML = fig.note ? `<div class="note">${fig.note}</div>` : '';
+    const dots = $('dots'); dots.innerHTML = '';
+    fig.steps.forEach((s, i) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Step ' + (i + 1)); b.addEventListener('click', () => { stop(); go(i); }); dots.appendChild(b); });
+    const ol = $('slol'); ol.innerHTML = '';
+    fig.steps.forEach((s, i) => { const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button'; b.innerHTML = `<span class="n">${i + 1}</span><span>${esc(s.cap)}</span>`; b.addEventListener('click', () => { stop(); go(i); }); li.appendChild(b); ol.appendChild(li); });
+    renderList(); go(0);
+    store.set('cage-last', q.id);
+    if (push) { try { history.replaceState(null, '', '#' + q.id); } catch (e) { location.hash = q.id; } }
+  }
+  function draw() {
+    const w = $('draw').clientWidth || 700;
+    const fin = !!fig.steps[step].final;
+    $('draw').innerHTML = renderFig(fig, step, w, { maxH: Math.max(320, Math.min(700, window.innerHeight * 0.68)), hideCon });
+  }
+  function go(i) {
+    step = Math.max(0, Math.min(fig.steps.length - 1, i));
+    draw();
+    $('capn').textContent = step + 1;
+    $('captxt').textContent = fig.steps[step].cap;
+    const its = fig.steps[step].items;
+    const hasArc = its.some(i => i.t === 'arc' && i.r > 3), hasAng = its.some(i => i.t === 'angTool' && i.r > 3);
+    let th = '';
+    if (hasArc) th += `<div class="tchip"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M11 3L4 20M11 3L18 20M11 3V0.5" stroke="var(--tool)" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="11" cy="3" r="2" fill="var(--tool)"/><path d="M18 20l-1-3" stroke="var(--pencil)" stroke-width="2.4" stroke-linecap="round"/></svg><span><b>Compass</b> — put the needle on the centre point, open the compass to the radius, then swing the pencil to draw the arc.</span></div>`;
+    if (hasAng) th += `<div class="tchip"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M2 17A9 9 0 0 1 20 17Z" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="1.5"/><path d="M11 17L16 9" stroke="var(--pencil)" stroke-width="2" stroke-linecap="round"/></svg><span><b>Protractor</b> — place its centre on the corner point and its base line along XY (or the reference line), make a small mark at the required angle, then join the corner to the mark. (The angle arc and value are added at the end.) (30°, 45° and 60° can also be drawn with set squares.)</span></div>`;
+    $('toolhint').innerHTML = th;
+    $('stepno').textContent = `Step ${step + 1} of ${fig.steps.length}`;
+    $('prev').disabled = step === 0; $('next').disabled = step === fig.steps.length - 1;
+    [...$('dots').children].forEach((d, j) => { d.className = j === step ? 'cur' : j < step ? 'on' : ''; });
+    [...$('slol').querySelectorAll('button')].forEach((b, j) => { if (j === step) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); b.classList.toggle('done', j < step); });
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } $('play').textContent = 'Play'; }
+  $('prev').addEventListener('click', () => { stop(); go(step - 1); });
+  $('next').addEventListener('click', () => { stop(); go(step + 1); });
+  $('all').addEventListener('click', () => { stop(); go(fig.steps.length - 1); });
+  const setSteps = open => { $('steplist').hidden = !open; $('stepsBtn').setAttribute('aria-expanded', String(open)); $('stepsBtn').textContent = open ? 'Hide steps' : 'All steps'; };
+  $('stepsBtn').addEventListener('click', () => setSteps($('steplist').hidden));
+  $('slClose').addEventListener('click', () => { setSteps(false); $('stepsBtn').focus(); });
+  $('play').addEventListener('click', () => {
+    if (timer) { stop(); return; }
+    if (step >= fig.steps.length - 1) go(0);
+    $('play').textContent = 'Pause';
+    timer = setInterval(() => { if (step >= fig.steps.length - 1) { stop(); return; } go(step + 1); }, 3200);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.key === 'ArrowRight') { stop(); go(step + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { stop(); go(step - 1); e.preventDefault(); }
+    else if (e.key === 'Home') { stop(); go(0); } else if (e.key === 'End') { stop(); go(fig.steps.length - 1); }
+  });
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => fig && draw(), 120); });
+  window.addEventListener('hashchange', () => { const q = QS.find(x => x.id === location.hash.slice(1)); if (q && q !== curQ) openQ(q, false); });
+  const start = QS.find(x => x.id === location.hash.slice(1)) || QS.find(x => x.id === store.get('cage-last')) || QS[0];
+  curMod = start.mod; openQ(start, false);
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
+</script>
+</body>
+</html>
