@@ -281,6 +281,7 @@ class Fig {
   Ang(c, r, a0, a1, text, o = {}) { if (a1 < a0) [a0, a1] = [a1, a0]; return this._a(Object.assign({ t: 'ang', c, r, a0, a1, text }, o)); }
   Dim(a, b, text, off = 6) { return this._a({ t: 'dim', a, b, text, off }); }
   DimL(a, b, text, off = 6) { return this._a({ t: 'dim', a, b, text, off, len: true }); }
+  Msr(a, b, text) { return this._a({ t: 'msr', a, b, text, tmp: true }); }
   Circ(c, r, s = 'k') { return this._a({ t: 'circ', c, r, s }); }
   Fill(pts) { return this._a({ t: 'fill', pts }); }
   // vertical dimension from XY (y=0) to point p, drawn at x = X, with leader from p
@@ -317,7 +318,7 @@ function figBBox(fig) {
   const inc = (p, padx = 0, pady = 0) => { x0 = Math.min(x0, p[0] - padx); x1 = Math.max(x1, p[0] + padx); y0 = Math.min(y0, p[1] - pady); y1 = Math.max(y1, p[1] + pady); };
   for (const st of fig.steps) for (const it of st.items) {
     switch (it.t) {
-      case 'l': inc(it.a); inc(it.b); break;
+      case 'l': case 'msr': inc(it.a); inc(it.b); break;
       case 'pl': case 'fill': it.pts.forEach(p => inc(p)); break;
       case 'pt': case 'lab': inc(it.p, 7, 6); break;
       case 'tx': { const w = String(it.text).length * (it.size === 's' ? 1.7 : 2.1); const a = it.anchor || 'middle'; inc([it.p[0] + (a === 'end' ? -w : a === 'start' ? w : 0), it.p[1]], a === 'middle' ? w / 2 : 1, 4); inc(it.p); break; }
@@ -446,6 +447,14 @@ function renderFig(fig, upto, widthPx, opts = {}) {
     for (const it of fig.steps[si].items) {
       let svg = '', hpath = '';
       switch (it.t) {
+        case 'msr': {
+          if (!isNew) break;
+          const dir = unit(sub(it.b, it.a)), nrm = [-dir[1], dir[0]], tk = mul(nrm, 2.6 * k);
+          const m = mul(add(it.a, it.b), 0.5), tp = add(m, mul(nrm, 11 * k));
+          svg = `<path d="M${X(it.a)} ${Y(it.a)}L${X(it.b)} ${Y(it.b)}M${X(sub(it.a, tk))} ${Y(sub(it.a, tk))}L${X(add(it.a, tk))} ${Y(add(it.a, tk))}M${X(sub(it.b, tk))} ${Y(sub(it.b, tk))}L${X(add(it.b, tk))} ${Y(add(it.b, tk))}" stroke="var(--pencil)" stroke-width="${(2.4 * k).toFixed(3)}" stroke-linecap="round" fill="none" opacity="0.9"/>`
+            + `<text x="${X(tp)}" y="${Y(tp)}" text-anchor="middle" dominant-baseline="middle" font-size="${(12.5 * k).toFixed(2)}" font-weight="700" fill="var(--pencil)" stroke="var(--paper)" stroke-width="${(3.2 * k).toFixed(3)}" paint-order="stroke">${it.text}</text>`;
+          break;
+        }
         case 'l': {
           const d = `M${X(it.a)} ${Y(it.a)}L${X(it.b)} ${Y(it.b)}`;
           svg = `<path d="${d}" ${strokeAttr(it.s)}/>`; hpath = d; break;
@@ -1167,6 +1176,7 @@ function lamina(cfg) {
   const far1 = HPm ? st1.reduce((m, p) => p.x < m.x ? p : m) : st1.reduce((m, p) => p.x < m.x ? p : m);
   F.step(`STAGE 2 – Tilt it about the resting ${cfg.rest.edge ? 'edge' : 'corner'} (kept on XY, on the right). Copy the ${V2} line to the right and rotate it: ${tiltWhy} Measure the compass opening FROM THE FIGURE: it is the length of the stage-1 ${V2} line from the pivot to its far end. Put the compass point on the pivot and swing that end up with the arc.`);
   const Lr = Math.max(...st1.map(p => -(p.x - st1.find(q => q.n === (cfg.rest.edge ? cfg.rest.edge[0] : cfg.rest.corner)).x)));
+  { const pv1 = pivotOf(st1), v1 = HPm ? FVp(pv1) : TVp(pv1), far = HPm ? FVp(far1) : TVp(far1); F.Msr(far, v1, f1(Lr) + ' mm'); }
   if (cfg.tilt.h !== undefined) { F.L([pv2v[0] - Lr - 4, HPm ? cfg.tilt.h : -cfg.tilt.h], [pv2v[0] + 4, HPm ? cfg.tilt.h : -cfg.tilt.h], 'cl'); F.Dim([pv2v[0] + 6, 0], [pv2v[0] + 6, HPm ? cfg.tilt.h : -cfg.tilt.h], String(cfg.tilt.h), 0); }
   F.Arc(pv2v, Lr, 180, HPm ? 180 - t : 180 + t, 'c');
   F.L([pv2v[0] - Lr, 0], pv2v, 'c');
@@ -1214,6 +1224,7 @@ function lamina(cfg) {
       const q2 = v3(st2.find(z => z.n === p.n)), t3 = v3(p);
       const r1 = Math.hypot(q2[0] - A2v[0], q2[1] - A2v[1]), r2 = Math.hypot(q2[0] - B2v[0], q2[1] - B2v[1]);
       F.step((i === 0 ? `Now copy the stage-2 ${V1} with the compass, corner by corner (the shape does not change, it is only turned). ` : '') + `Corner ${p.n}: measure the distance from ${refN[0]} to ${p.n} in the stage-2 ${V1} (${f1(r1)} mm) and draw an arc from ${refN[0]}; then measure ${refN[1]} to ${p.n} (${f1(r2)} mm) and draw an arc from ${refN[1]}. The arcs cross at ${p.n}.`);
+      F.Msr(A2v, q2, f1(r1) + ' mm'); F.Msr(B2v, q2, f1(r2) + ' mm');
       cutA(vA, t3, r1); cutA(vB, t3, r2);
       F.Lab(t3, HPm ? p.n : P(p.n), awayDir(t3, c3), sty3);
     });
@@ -1361,6 +1372,7 @@ function compassCopy(F, o) {
     const r1 = dist(it.o, o.A.o), r2 = dist(it.o, o.B.o);
     if (r1 < 0.06 || r2 < 0.06) return;
     F.step((k++ === 0 ? o.intro + ' ' : '') + `Corner ${it.lab}: set the compass to the distance ${o.A.name}–${it.lab} in the ${o.from} (${f1(r1)} mm) and draw an arc from ${o.A.name}; then set it to ${o.B.name}–${it.lab} (${f1(r2)} mm) and draw an arc from ${o.B.name}. The arcs cross at ${it.lab}.`);
+    F.Msr(o.A.o, it.o, f1(r1) + ' mm'); F.Msr(o.B.o, it.o, f1(r2) + ' mm');
     cutA(o.A.p, it.p, r1); cutA(o.B.p, it.p, r2);
     F.Lab(it.p, it.lab, awayDir(it.p, o.cen), o.sty);
   });
@@ -1467,6 +1479,7 @@ function solidFig(cfg) {
     const P1 = pvp(V1), P2 = pvp(V2);
     let iB = M.base[0], dm = -1; M.base.forEach(i => { const d = Math.hypot(FVp(V1[i])[0] - P1[0], FVp(V1[i])[1] - P1[1]); if (d > dm) { dm = d; iB = i; } });
     const B2 = FVp(V2[iB]), Lb = dm, a1 = atan2d(B2[1] - P2[1], B2[0] - P2[0]);
+    F.Msr(FVp(V1[iB]), P1, f1(Lb) + ' mm');
     F.L([P2[0] - Lb, 0], P2, 'c');
     F.Arc(P2, Lb, 180, a1, 'c');
     F.L(P2, B2, 'fv');
