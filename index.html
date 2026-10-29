@@ -1890,13 +1890,13 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
 
 (function () {
   const MODS = [
-    { id: 'points', m: 2, name: 'Points', full: 'Projections of points' },
-    { id: 'lines', m: 2, name: 'Lines', full: 'Projections of lines' },
+    { id: 'points', m: 1, name: 'Points', full: 'Projections of points' },
+    { id: 'lines', m: 1, name: 'Lines', full: 'Projections of lines' },
     { id: 'planes', m: 2, name: 'Planes', full: 'Projections of planes' },
     { id: 'solids', m: 3, name: 'Solids', full: 'Projections of solids' },
     { id: 'dev', m: 4, name: 'Development', full: 'Development of lateral surfaces' },
     { id: 'iso', m: 5, name: 'Isometric', full: 'Isometric projections' }];
-  const MODULES = [2, 3, 4, 5].map(n => ({ n, parts: MODS.filter(x => x.m === n) }));
+  const MODULES = [1, 2, 3, 4, 5].map(n => ({ n, parts: MODS.filter(x => x.m === n) }));
   const $ = id => document.getElementById(id);
   const modOf = id => MODS.find(m => m.id === id);
   const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
