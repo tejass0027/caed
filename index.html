@@ -1184,8 +1184,24 @@ function lamina(cfg) {
       F.Ang(c, 14, Math.min(0, a), Math.max(0, a), f1(Math.abs(a)) + '°', { tr: 7 });
     }
   }
-  F.step(`Complete the stage-3 ${V1} as an exact COPY of the stage-2 ${V1} (same shape and size), just turned. Transfer the distances with a compass from the line you just drew.`);
-  drawView(st3, HPm ? TVp : FVp, HPm ? 'tv' : 'fv');
+  {
+    const v3 = HPm ? TVp : FVp, sty3 = HPm ? 'tv' : 'fv';
+    const nmo = x => Array.isArray(x) ? 'the mid-point of ' + x.join('') : x;
+    const refN = s3.ref.map(nmo);
+    const A2v = v3(ptBy(st2, s3.ref[0])), B2v = v3(ptBy(st2, s3.ref[1]));
+    const c3 = centroid2(named(st3).map(p => v3(p)));
+    const todo = named(st3).filter(p => Math.hypot(v3(p)[0] - vA[0], v3(p)[1] - vA[1]) > 0.05 && Math.hypot(v3(p)[0] - vB[0], v3(p)[1] - vB[1]) > 0.05);
+    const cutA = (c, t, r) => { const a = atan2d(t[1] - c[1], t[0] - c[0]); F.Arc(c, r, a - 14, a + 14, 'c'); };
+    todo.forEach((p, i) => {
+      const q2 = v3(st2.find(z => z.n === p.n)), t3 = v3(p);
+      const r1 = Math.hypot(q2[0] - A2v[0], q2[1] - A2v[1]), r2 = Math.hypot(q2[0] - B2v[0], q2[1] - B2v[1]);
+      F.step((i === 0 ? `Now copy the stage-2 ${V1} with the compass, corner by corner (the shape does not change, it is only turned). ` : '') + `Corner ${p.n}: measure the distance from ${refN[0]} to ${p.n} in the stage-2 ${V1} (${f1(r1)} mm) and draw an arc from ${refN[0]}; then measure ${refN[1]} to ${p.n} (${f1(r2)} mm) and draw an arc from ${refN[1]}. The arcs cross at ${p.n}.`);
+      cutA(vA, t3, r1); cutA(vB, t3, r2);
+      F.Lab(t3, HPm ? p.n : P(p.n), awayDir(t3, c3), sty3);
+    });
+    F.step(`Join the corners in order. The stage-3 ${V1} is an exact copy of the stage-2 ${V1}, only turned.`);
+    drawView(st3, v3, sty3);
+  }
   F.step(`Project every corner ${HPm ? 'up' : 'down'}, and draw horizontal lines from the stage-2 ${V2} (${HPm ? 'heights above HP' : 'distances from VP'} do not change when the ${name} is turned).`);
   for (const p of named(st3)) {
     const p2 = st2.find(q => q.n === p.n);
