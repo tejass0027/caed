@@ -3,197 +3,219 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1b2530">
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CAGE Steps">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>CAGE Step Book</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
-/* Layout: drafting-sheet workbench — question index on the left, the drawing sheet (with title-block strip) on the right; stacks on phones. */
+/* Layout: one screen like a drawing board — big drawing on the left, the step you are on (and its answer) on the right; on phones the drawing sits on top and Back / Next stay pinned at the bottom. */
 :root {
-  --paper: #fbfcfd; --board: #e9eef2; --panel: #f4f7f9; --rule: #cfd8df; --rule2: #b7c3cc;
-  --ink: #1b2530; --muted: #5a6b79; --accent: #1f5fa6; --accent-ink: #ffffff;
-  --fv: #c4452a; --tv: #1f5fa6; --sv: #7a4fb0; --carry: #178a66; --con: #8b98a5; --tl: #5a4ec2;
-  --dim: #46606f; --angc: #9a5a10; --cut: #b23a7a; --halo: rgba(255, 190, 40, .42); --grid: rgba(31, 95, 166, .07);
-  --ok: #178a66; --warn: #9a5a10; --tool: #5d6b78; --toolfill: rgba(120, 160, 200, .16); --pencil: #e0a21a;
-  --fdisp: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --fbody: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --fmono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
-  --fdraw: "Saira Condensed", "Arial Narrow", sans-serif;
+  --bg: #eef1f4; --paper: #ffffff; --panel: #f6f8fa; --line: #d6dde3; --line2: #b9c4cd;
+  --ink: #111a22; --muted: #4f5f6c; --accent: #1554a0; --accent-soft: #e3edf8; --on-accent: #ffffff;
+  --fv: #c23a1e; --tv: #1554a0; --sv: #6b3fb0; --carry: #12825f; --con: #75828e; --tl: #5b45c9;
+  --dim: #34505f; --angc: #9a5200; --cut: #b0256d; --halo: transparent;
+  --tool: #4d5c69; --toolfill: rgba(80, 130, 190, .14); --pencil: #e09a12; --warn: #8f4b00;
+  --font: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --fdraw: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --paper: #121820; --board: #0b1015; --panel: #161e27; --rule: #263240; --rule2: #33424f;
-  --ink: #e4ebf1; --muted: #93a3b1; --accent: #6fa8e6; --accent-ink: #0b1015;
-  --fv: #f0805f; --tv: #6fa8e6; --sv: #b998ea; --carry: #46c79c; --con: #6f7e8b; --tl: #a59cf2;
-  --dim: #9db4c2; --angc: #e6a95a; --cut: #e47ab2; --halo: rgba(255, 190, 40, .26); --grid: rgba(111, 168, 230, .06);
-  --ok: #46c79c; --warn: #e6a95a; --tool: #aab8c4; --toolfill: rgba(140, 180, 220, .14); --pencil: #f2c14e; color-scheme: dark } }
+  --bg: #0d1217; --paper: #151c23; --panel: #1b232c; --line: #2a3540; --line2: #3a4753;
+  --ink: #edf2f6; --muted: #a6b4c0; --accent: #7fb2ee; --accent-soft: #1d2d40; --on-accent: #0d1217;
+  --fv: #ff8a6a; --tv: #7fb2ee; --sv: #c2a1f2; --carry: #4fd0a2; --con: #8494a2; --tl: #ad9ff7;
+  --dim: #b4c8d4; --angc: #f0b264; --cut: #f07ab6; --tool: #b4c2cd; --toolfill: rgba(140, 180, 220, .14); --pencil: #f5c44f; --warn: #f0b264;
+  color-scheme: dark } }
 :root[data-theme="dark"] {
-  --paper: #121820; --board: #0b1015; --panel: #161e27; --rule: #263240; --rule2: #33424f;
-  --ink: #e4ebf1; --muted: #93a3b1; --accent: #6fa8e6; --accent-ink: #0b1015;
-  --fv: #f0805f; --tv: #6fa8e6; --sv: #b998ea; --carry: #46c79c; --con: #6f7e8b; --tl: #a59cf2;
-  --dim: #9db4c2; --angc: #e6a95a; --cut: #e47ab2; --halo: rgba(255, 190, 40, .26); --grid: rgba(111, 168, 230, .06);
-  --ok: #46c79c; --warn: #e6a95a; --tool: #aab8c4; --toolfill: rgba(140, 180, 220, .14); --pencil: #f2c14e; color-scheme: dark }
+  --bg: #0d1217; --paper: #151c23; --panel: #1b232c; --line: #2a3540; --line2: #3a4753;
+  --ink: #edf2f6; --muted: #a6b4c0; --accent: #7fb2ee; --accent-soft: #1d2d40; --on-accent: #0d1217;
+  --fv: #ff8a6a; --tv: #7fb2ee; --sv: #c2a1f2; --carry: #4fd0a2; --con: #8494a2; --tl: #ad9ff7;
+  --dim: #b4c8d4; --angc: #f0b264; --cut: #f07ab6; --tool: #b4c2cd; --toolfill: rgba(140, 180, 220, .14); --pencil: #f5c44f; --warn: #f0b264;
+  color-scheme: dark }
 * { box-sizing: border-box }
-body { background: var(--board); color: var(--ink); font-family: var(--fbody); font-size: 15px; line-height: 1.55;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--board) }
-.wrap { max-width: 1320px; margin: 0 auto }
-header.top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; padding-block: 18px 12px; border-bottom: 1.5px solid var(--ink); margin-bottom: 18px }
-header.top h1 { font-family: var(--fdisp); font-weight: 700; font-size: 30px; letter-spacing: .02em; margin: 0; text-transform: uppercase; line-height: 1 }
-header.top .sub { color: var(--muted); font-size: 13.5px }
-header.top .count { margin-left: auto; font-family: var(--fmono); font-size: 12.5px; color: var(--muted) }
-.grid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: start }
-/* index */
-nav.index { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); display: flex; flex-direction: column; gap: 10px; min-width: 0 }
-.mods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px }
-.mods button { font-family: var(--fdisp); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; padding: 7px 4px; border: 1px solid var(--rule2); background: var(--paper); color: var(--ink); cursor: pointer; border-radius: 2px }
-.mods button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink) }
-.mods button:focus-visible, .qlist button:focus-visible, .ctl button:focus-visible, .dots button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
-.search { width: 100%; padding: 8px 10px; border: 1px solid var(--rule2); background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; border-radius: 2px }
-.qlist { list-style: none; margin: 0; padding: 0; overflow-y: auto; border: 1px solid var(--rule); background: var(--paper); flex: 1; min-height: 120px }
-.qlist li + li { border-top: 1px solid var(--rule) }
-.qlist button { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 38px 1fr; gap: 6px; width: 100%; padding: 9px 10px; cursor: pointer; font-size: 13.5px; line-height: 1.35 }
-.qlist button:hover { background: var(--panel) }
-.qlist button[aria-current="true"] { background: var(--panel); box-shadow: inset 3px 0 0 var(--accent) }
-.qlist .qn { font-family: var(--fmono); font-size: 12px; color: var(--muted); padding-top: 1px }
-.qlist .mtag { font-family: var(--fmono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; display: block }
-.mobile-pick { display: none; gap: 8px }
-.mobile-pick select { flex: 1; min-width: 0; padding: 9px; font: inherit; font-size: 14px; border: 1px solid var(--rule2); background: var(--paper); color: var(--ink); border-radius: 2px }
-/* sheet */
-main.sheet { background: var(--paper); border: 1.5px solid var(--ink); min-width: 0 }
-.qhead { padding: 18px 22px 14px; border-bottom: 1px solid var(--rule) }
-.qhead .eyebrow { font-family: var(--fdisp); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: 13px; color: var(--accent) }
-.qhead p { margin: 6px 0 0; max-width: 78ch; font-size: 15.5px }
-.board { position: relative; padding: 14px; background-color: var(--paper);
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 20px 20px; overflow-x: auto }
-#draw { min-height: 260px }
-@media (max-width: 700px) { #draw { width: 640px } }
-#draw svg text { font-family: var(--fdraw); font-weight: 500 }
+html, body { height: 100% }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.5;
+  display: flex; flex-direction: column; overflow: hidden }
+button, select { font: inherit; color: inherit }
+button:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px }
+
+/* top bar */
+.top { flex: none; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--paper); border-bottom: 1px solid var(--line);
+  padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.brand { font-weight: 700; font-size: 19px; white-space: nowrap; margin-right: 6px }
+.pick { display: flex; gap: 8px; flex: 1; min-width: 0 }
+select { appearance: none; -webkit-appearance: none; background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23778899' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1px solid var(--line2); border-radius: 10px; padding: 10px 36px 10px 12px; min-height: 46px; min-width: 0; cursor: pointer }
+#topic { flex: none; width: 170px }
+#qsel { flex: 1; text-overflow: ellipsis }
+.qnav { display: flex; gap: 6px }
+.qnav button { width: 46px; height: 46px; border-radius: 10px; border: 1px solid var(--line2); background: var(--panel); cursor: pointer; font-size: 20px; line-height: 1 }
+.qnav button:disabled { opacity: .35; cursor: default }
+
+/* main */
+.main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 400px }
+.board { position: relative; min-width: 0; min-height: 0; background: var(--paper); display: flex; flex-direction: column }
+#drawWrap { flex: 1; min-height: 0; overflow: auto; padding: 14px; display: flex }
+#draw { margin: auto }
 #draw .nw { animation: nw .45s ease-out }
 #draw .nw.mid { animation: nw .5s ease-out .9s both }
 #draw .nw.late { animation: nw .5s ease-out 1.9s both }
 #draw .tool-p { animation: nw .4s ease-out both }
 @keyframes nw { from { opacity: 0 } to { opacity: 1 } }
 @media (prefers-reduced-motion: reduce) { #draw .nw, #draw .nw.mid, #draw .nw.late { animation: none } }
-.ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 16px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); background: var(--panel) }
-.ctl > button { font-family: var(--fdisp); font-weight: 600; font-size: 15px; letter-spacing: .05em; text-transform: uppercase; padding: 8px 16px; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; border-radius: 2px }
-.ctl > button.primary { background: var(--ink); color: var(--paper) }
-.ctl > button:disabled { opacity: .35; cursor: default }
-.ctl .stepno { font-family: var(--fmono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 92px }
-.dots { display: flex; gap: 3px; flex-wrap: wrap; flex: 1; min-width: 120px }
-.dots button { all: unset; width: 14px; height: 8px; background: var(--rule2); cursor: pointer; border-radius: 1px }
-.dots button.on { background: var(--muted) }
-.dots button.cur { background: var(--accent) }
-.cap { padding: 16px 22px; display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; align-items: start; min-height: 92px }
-.cap .big { font-family: var(--fdisp); font-weight: 700; font-size: 38px; line-height: .9; color: var(--accent); font-variant-numeric: tabular-nums }
-.cap .txt { font-size: 16px; max-width: 80ch; display: grid; gap: 10px }
-.tools { display: flex; flex-direction: column; gap: 6px }
-.tools:empty { display: none }
-.tchip { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--muted); border: 1px solid var(--rule2); background: var(--panel); padding: 7px 10px; border-radius: 2px }
-.tchip b { font-family: var(--fdisp); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink); font-size: 14px; white-space: nowrap }
-.tchip svg { flex: none; margin-top: 1px }
-.steplist { border-bottom: 1px solid var(--rule); padding: 14px 22px 18px; background: var(--paper) }
-.sl-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px }
-.sl-head h3 { font-family: var(--fdisp); font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: .08em; margin: 0; color: var(--muted) }
-.sl-head button { font-family: var(--fdisp); font-weight: 600; font-size: 14px; letter-spacing: .05em; text-transform: uppercase; padding: 5px 12px; border: 1px solid var(--rule2); background: var(--paper); color: var(--ink); cursor: pointer; border-radius: 2px }
-.steplist ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: s }
-.steplist li button { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; width: 100%; padding: 8px 10px; cursor: pointer; font-size: 14.5px; line-height: 1.5; border-radius: 2px }
-.steplist li button:hover { background: var(--panel) }
-.steplist li button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px }
-.steplist li button .n { font-family: var(--fdisp); font-weight: 700; font-size: 20px; color: var(--muted); line-height: 1.2; font-variant-numeric: tabular-nums }
-.steplist li button[aria-current="true"] { background: var(--panel); box-shadow: inset 3px 0 0 var(--accent) }
-.steplist li button[aria-current="true"] .n { color: var(--accent) }
-.steplist li button.done .n { color: var(--ink) }
-.lower { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); border-top: 1.5px solid var(--ink) }
-.lower > div { padding: 14px 22px 18px; min-width: 0 }
-.lower > div + div { border-left: 1px solid var(--rule) }
-.lower h3 { font-family: var(--fdisp); font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px; color: var(--muted) }
-table.ans { border-collapse: collapse; width: 100%; font-size: 14.5px }
-table.ans td { padding: 5px 0; border-bottom: 1px dashed var(--rule); vertical-align: top }
-table.ans td:last-child { text-align: right; font-family: var(--fmono); font-size: 13.5px; padding-left: 12px; white-space: nowrap }
-.module { margin-top: 10px; font-size: 13.5px; color: var(--warn); border-left: 2px solid var(--warn); padding-left: 10px }
-.note { margin-top: 10px; font-size: 13.5px; color: var(--muted); border-left: 2px solid var(--rule2); padding-left: 10px }
-.key { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 13px }
-.key span { display: flex; align-items: center; gap: 8px }
+.zoom { position: absolute; right: 12px; top: 12px; display: flex; flex-direction: column; gap: 6px; z-index: 2 }
+.zoom button { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line2); background: var(--paper); cursor: pointer; font-size: 22px; line-height: 1; box-shadow: 0 1px 3px rgba(0,0,0,.12) }
+.zoom button.fit { font-size: 12px; font-weight: 700 }
+.hintpan { position: absolute; left: 12px; bottom: 10px; font-size: 13px; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; pointer-events: none }
+
+/* side panel */
+.side { min-width: 0; min-height: 0; overflow-y: auto; border-left: 1px solid var(--line); background: var(--bg); display: flex; flex-direction: column; gap: 14px; padding: 16px }
+.qcard { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px }
+.qcard .tag { font-size: 14px; font-weight: 700; color: var(--accent) }
+.qcard p { margin: 4px 0 0; font-size: 16px }
+.qcard.clamp p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
+.more { background: none; border: 0; padding: 4px 0 0; color: var(--accent); font-weight: 700; cursor: pointer; font-size: 15px }
+.stepcard { background: var(--paper); border: 2px solid var(--accent); border-radius: 14px; padding: 16px }
+.stepno { font-size: 15px; font-weight: 700; color: var(--accent); display: flex; justify-content: space-between; gap: 8px }
+.bar { height: 6px; border-radius: 3px; background: var(--line); margin: 8px 0 12px; overflow: hidden }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .25s }
+#captxt { font-size: 19px; line-height: 1.5 }
+.tip { margin-top: 12px; display: flex; gap: 10px; align-items: flex-start; background: var(--panel); border-radius: 10px; padding: 10px 12px; font-size: 15px; color: var(--muted) }
+.tip b { color: var(--ink) }
+.tip svg { flex: none; margin-top: 2px }
+.tabs { display: flex; gap: 6px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 4px }
+.tabs button { flex: 1; border: 0; background: none; padding: 10px 6px; border-radius: 9px; cursor: pointer; font-weight: 700; color: var(--muted); font-size: 16px }
+.tabs button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent) }
+.pane { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 8px 16px 14px }
+.steplist { list-style: none; margin: 0; padding: 0 }
+.steplist button { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; width: 100%; padding: 10px 6px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 15.5px; line-height: 1.45; color: var(--muted) }
+.steplist li:last-child button { border-bottom: 0 }
+.steplist button .n { font-weight: 700 }
+.steplist button.done { color: var(--ink) }
+.steplist button[aria-current="true"] { color: var(--ink); background: var(--accent-soft); border-radius: 8px }
+.steplist button[aria-current="true"] .n { color: var(--accent) }
+.steplist button:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px }
+table.ans { border-collapse: collapse; width: 100% }
+table.ans td { padding: 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 16px }
+table.ans tr:last-child td { border-bottom: 0 }
+table.ans td:last-child { text-align: right; padding-left: 12px; white-space: nowrap; font-variant-numeric: tabular-nums }
+.ansplain { padding: 8px 0; font-size: 16px }
+.module { margin: 6px 0 4px; font-size: 15px; color: var(--warn); background: var(--panel); border-radius: 10px; padding: 10px 12px }
+.note { margin: 6px 0 4px; font-size: 15px; color: var(--muted); background: var(--panel); border-radius: 10px; padding: 10px 12px }
+.key { display: grid; gap: 10px; padding: 8px 0; font-size: 16px }
+.key span { display: flex; align-items: center; gap: 12px }
 .key svg { flex: none }
-.hint { font-size: 12.5px; color: var(--muted); margin-top: 10px }
-.empty { padding: 14px; color: var(--muted); font-size: 13.5px }
-@media (max-width: 900px) {
-  .grid { grid-template-columns: minmax(0, 1fr) }
-  nav.index { position: static; max-height: none }
-  .qlist, .search { display: none }
-  .mobile-pick { display: flex }
-  .mods { grid-template-columns: repeat(3, 1fr) }
-  .lower { grid-template-columns: minmax(0, 1fr) }
-  .lower > div + div { border-left: 0; border-top: 1px solid var(--rule) }
-  header.top .count { margin-left: 0 }
+
+/* bottom controls */
+.ctl { flex: none; display: flex; align-items: center; gap: 10px; background: var(--paper); border-top: 1px solid var(--line);
+  padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.ctl .big { flex: 1; max-width: 260px; min-height: 54px; border-radius: 12px; font-size: 19px; font-weight: 700; cursor: pointer; border: 2px solid var(--ink); background: var(--paper) }
+.ctl .big.next { background: var(--accent); border-color: var(--accent); color: var(--on-accent) }
+.ctl .big:disabled { opacity: .35; cursor: default }
+.ctl .mid { flex: 1; display: flex; justify-content: center; gap: 8px }
+.ctl .small { min-height: 46px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line2); background: var(--panel); cursor: pointer; font-weight: 700; font-size: 16px; white-space: nowrap }
+.ctl .count { font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap }
+
+@media (max-width: 999px) {
+  body { overflow: auto; height: auto; min-height: 100% }
+  html { height: auto }
+  .main { display: block }
+  .board { height: 58vh; min-height: 340px; border-bottom: 1px solid var(--line) }
+  .side { border-left: 0; overflow: visible; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+  .ctl { position: sticky; bottom: 0; z-index: 5 }
+  .stepcard { order: -1 }
+  .ctl .mid .small.opt { display: none }
 }
-@media (max-width: 520px) {
-  .qhead, .cap, .lower > div { padding-left: 14px; padding-right: 14px }
-  .cap { grid-template-columns: 40px minmax(0, 1fr) } .cap .big { font-size: 30px }
-  .ctl > button { padding: 8px 12px }
-  .board { padding: 6px }
-  .key { grid-template-columns: 1fr }
+@media (max-width: 560px) {
+  .brand { display: none }
+  .pick { display: contents }
+  #topic { flex: 1; width: auto; order: 1 }
+  .qnav { order: 2 }
+  #qsel { flex-basis: 100%; order: 3 }
+  .top { gap: 8px }
+  .qnav button { width: 42px }
+  #captxt { font-size: 18px }
+  .ctl .big { min-height: 52px; font-size: 18px }
 }
 </style>
+
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <h1>CAGE Step Book</h1>
-    <span class="sub">Every question from your Computer Aided Engineering Graphics module, drawn one line at a time.</span>
-    <span class="count" id="count"></span>
-  </header>
-  <div class="grid">
-    <nav class="index" aria-label="Questions">
-      <div class="mods" id="mods" role="group" aria-label="Topic"></div>
-      <input class="search" id="search" type="search" placeholder="Search questions (e.g. pentagon, 45°)" aria-label="Search questions">
-      <div class="mobile-pick"><select id="qsel" aria-label="Choose question"></select></div>
-      <ul class="qlist" id="qlist"></ul>
-    </nav>
-    <main class="sheet">
-      <div class="qhead"><div class="eyebrow" id="eyebrow"></div><p id="qtext"></p></div>
-      <div class="board"><div id="draw" aria-live="polite"></div></div>
-      <div class="ctl">
-        <button id="prev" type="button">‹ Back</button>
-        <button id="next" class="primary" type="button">Next ›</button>
-        <button id="play" type="button">Play</button>
-        <span class="stepno" id="stepno"></span>
-        <div class="dots" id="dots" aria-label="Jump to step"></div>
-        <button id="stepsBtn" type="button" aria-expanded="false" aria-controls="steplist">All steps</button>
-        <button id="all" type="button">Show all</button>
-      </div>
-      <section class="steplist" id="steplist" hidden aria-label="All steps for this question">
-        <div class="sl-head"><h3>Steps to draw it</h3><button type="button" id="slClose">Close</button></div>
-        <ol id="slol"></ol>
-      </section>
-      <div class="cap"><div class="big" id="capn">1</div><div class="txt"><div id="captxt"></div><div class="tools" id="toolhint"></div></div></div>
-      <div class="lower">
-        <div><h3>Answer</h3><div id="answer"></div><div id="module"></div><div id="note"></div></div>
-        <div><h3>How to read the drawing</h3>
-          <div class="key">
-            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--fv)" stroke-width="2.4"/></svg>Front view (′ labels)</span>
-            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--tv)" stroke-width="2.4"/></svg>Top view</span>
-            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="5 3"/></svg>Hidden edge (dashed)</span>
-            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--con)" stroke-width="1" stroke-dasharray="4 3"/></svg>Projector (vertical)</span>
-            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--carry)" stroke-width="1.2" stroke-dasharray="6 3"/></svg>Carried across stages</span>
-            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--tl)" stroke-width="1.8"/></svg>True length line</span>
-            <span><svg width="34" height="10"><line x1="2" y1="5" x2="32" y2="5" stroke="var(--con)" stroke-width="1" stroke-dasharray="12 3 2 3"/></svg>Locus / axis (chain)</span>
-            <span><svg width="34" height="16" viewBox="0 0 34 16"><path d="M17 2L10 15M17 2L24 15" stroke="var(--tool)" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M24 15l-1-3" stroke="var(--pencil)" stroke-width="2.4" stroke-linecap="round"/></svg>Compass (moves on arcs)</span>
-            <span><svg width="34" height="16" viewBox="0 0 34 16"><path d="M5 15A12 12 0 0 1 29 15Z" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="1.3"/></svg>Protractor (on angles)</span>
-          </div>
-          <div class="hint">Keys: ← → to step, Home / End for first / last step.</div>
-        </div>
-      </div>
-    </main>
+<header class="top">
+  <div class="brand">CAGE Step Book</div>
+  <div class="pick">
+    <select id="topic" aria-label="Topic"></select>
+    <select id="qsel" aria-label="Question"></select>
   </div>
+  <div class="qnav">
+    <button id="qprev" type="button" aria-label="Previous question">‹</button>
+    <button id="qnext" type="button" aria-label="Next question">›</button>
+  </div>
+</header>
+
+<div class="main">
+  <section class="board" aria-label="Drawing">
+    <div class="zoom">
+      <button id="zin" type="button" aria-label="Zoom in">+</button>
+      <button id="zout" type="button" aria-label="Zoom out">−</button>
+      <button id="zfit" class="fit" type="button" aria-label="Fit drawing to screen">FIT</button>
+    </div>
+    <div id="drawWrap"><div id="draw" aria-live="polite"></div></div>
+    <div class="hintpan" id="hintpan" hidden>Swipe to move around · FIT shows all</div>
+  </section>
+
+  <aside class="side">
+    <div class="qcard clamp" id="qcard">
+      <div class="tag" id="eyebrow"></div>
+      <p id="qtext"></p>
+      <button class="more" id="qmore" type="button">Show full question</button>
+    </div>
+
+    <div class="stepcard">
+      <div class="stepno"><span id="stepno"></span><span id="stepname"></span></div>
+      <div class="bar"><i id="barfill"></i></div>
+      <div id="captxt"></div>
+      <div id="toolhint"></div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="t-steps" aria-selected="true">All steps</button>
+      <button type="button" role="tab" id="t-ans" aria-selected="false">Answer</button>
+      <button type="button" role="tab" id="t-key" aria-selected="false">Colours</button>
+    </div>
+    <div class="pane" id="p-steps"><ol class="steplist" id="slol"></ol></div>
+    <div class="pane" id="p-ans" hidden><div id="answer"></div><div id="module"></div><div id="note"></div></div>
+    <div class="pane" id="p-key" hidden>
+      <div class="key">
+        <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="var(--fv)" stroke-width="3.5"/></svg>Front view (labels with ′)</span>
+        <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="var(--tv)" stroke-width="3.5"/></svg>Top view</span>
+        <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="var(--tl)" stroke-width="3"/></svg>True length line</span>
+        <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="var(--ink)" stroke-width="2" stroke-dasharray="6 4"/></svg>Hidden edge</span>
+        <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="var(--con)" stroke-width="1.5" stroke-dasharray="5 4"/></svg>Projector (always vertical)</span>
+        <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="var(--carry)" stroke-width="1.8" stroke-dasharray="7 4"/></svg>Carried across to the next stage</span>
+        <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="var(--con)" stroke-width="1.5" stroke-dasharray="14 4 3 4"/></svg>Locus or axis</span>
+        <span><svg width="40" height="20" viewBox="0 0 40 20"><path d="M20 2L12 18M20 2L28 18" stroke="var(--tool)" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M28 18l-1.2-3.6" stroke="var(--pencil)" stroke-width="3" stroke-linecap="round"/></svg>Compass: draw this arc</span>
+        <span><svg width="40" height="20" viewBox="0 0 40 20"><path d="M5 18A15 15 0 0 1 35 18Z" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="1.6"/></svg>Protractor: mark this angle</span>
+      </div>
+    </div>
+  </aside>
 </div>
+
+<nav class="ctl" aria-label="Steps">
+  <button id="prev" class="big" type="button">‹ Back</button>
+  <div class="mid">
+    <span class="count" id="count"></span>
+    <button id="play" class="small opt" type="button">Play</button>
+    <button id="all" class="small opt" type="button">Last step</button>
+  </div>
+  <button id="next" class="big next" type="button">Next ›</button>
+</nav>
+
 <script>
 // ===== Core geometry + figure model + SVG renderer =====
 const D2R = Math.PI / 180;
@@ -248,12 +270,12 @@ class Fig {
 // ---------- renderer ----------
 const CON_ST = new Set(['c', 'p', 'g', 'cl', 'lead']);
 const STY = {
-  k: ['--ink', 2.1], fv: ['--fv', 2.3], tv: ['--tv', 2.3], sv: ['--sv', 2.3],
-  kh: ['--ink', 1.5, [5, 3]], fvh: ['--fv', 1.6, [5, 3]], tvh: ['--tv', 1.6, [5, 3]],
-  c: ['--con', 1], p: ['--con', 0.9, [4, 3]], g: ['--carry', 1.1, [6, 3]],
-  cl: ['--con', 0.9, [12, 3, 2, 3]], tl: ['--tl', 1.7], xy: ['--ink', 1.3],
-  dim: ['--dim', 0.9], lead: ['--dim', 0.8], ax: ['--con', 0.9, [12, 3, 2, 3]],
-  thin: ['--ink', 1], cut: ['--cut', 1.8, [12, 3, 2, 3]], dev: ['--ink', 2.1]
+  k: ['--ink', 2.6], fv: ['--fv', 3], tv: ['--tv', 3], sv: ['--sv', 3],
+  kh: ['--ink', 1.9, [6, 4]], fvh: ['--fv', 2, [6, 4]], tvh: ['--tv', 2, [6, 4]],
+  c: ['--con', 1.3], p: ['--con', 1.2, [5, 4]], g: ['--carry', 1.4, [7, 4]],
+  cl: ['--con', 1.2, [14, 4, 3, 4]], tl: ['--tl', 2.2], xy: ['--ink', 1.7],
+  dim: ['--dim', 1.1], lead: ['--dim', 1], ax: ['--con', 1.2, [14, 4, 3, 4]],
+  thin: ['--ink', 1.3], cut: ['--cut', 2.2, [14, 4, 3, 4]], dev: ['--ink', 2.6]
 };
 const AT = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0], ne: [0.75, -0.75], nw: [-0.75, -0.75], se: [0.75, 0.85], sw: [-0.75, 0.85], c: [0, 0] };
 
@@ -350,12 +372,12 @@ function renderFig(fig, upto, widthPx, opts = {}) {
     return `stroke="var(${c})" stroke-width="${(w * k * extra).toFixed(3)}"` + (d ? ` stroke-dasharray="${d.map(v => (v * k).toFixed(3)).join(' ')}"` : '') + ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
   };
   const arrow = (tip, dir, cls = '--dim') => {
-    const u = unit(dir), n = [-u[1], u[0]], L = 7 * k, Wd = 2.2 * k;
+    const u = unit(dir), n = [-u[1], u[0]], L = 8 * k, Wd = 2.6 * k;
     const b = sub(tip, mul(u, L));
     const p1 = add(b, mul(n, Wd)), p2 = sub(b, mul(n, Wd));
     return `<path d="M${X(tip)} ${Y(tip)}L${X(p1)} ${Y(p1)}L${X(p2)} ${Y(p2)}Z" fill="var(${cls})"/>`;
   };
-  const fsz = s => (s === 's' ? 11.5 : s === 'l' ? 15 : s === 'xl' ? 17 : 13) * k;
+  const fsz = s => (s === 's' ? 13.5 : s === 'l' ? 18 : s === 'xl' ? 20 : 16) * k;
   const text = (p, t, o = {}) => {
     const fs = fsz(o.size);
     const anc = o.anchor || 'middle';
@@ -369,7 +391,7 @@ function renderFig(fig, upto, widthPx, opts = {}) {
   const labelAt = (p, lab, at, s) => {
     let d;
     if (Array.isArray(at)) d = [at[0], -at[1]]; else d = AT[at] || AT.ne;
-    const off = 8 * k;
+    const off = 10 * k;
     const q = [p[0] + d[0] * off, p[1] - d[1] * off];
     const anc = Math.abs(d[0]) < 0.3 ? 'middle' : d[0] > 0 ? 'start' : 'end';
     const dy = d[1] > 0.3 ? 0.75 : d[1] < -0.3 ? 0.1 : 0.35;
@@ -436,7 +458,7 @@ function renderFig(fig, upto, widthPx, opts = {}) {
         }
         case 'pt': {
           const col = it.s === 'fv' ? '--fv' : it.s === 'tv' ? '--tv' : it.s === 'sv' ? '--sv' : '--ink';
-          svg = `<circle cx="${X(it.p)}" cy="${Y(it.p)}" r="${(2.6 * k).toFixed(3)}" fill="var(${col})"/>`;
+          svg = `<circle cx="${X(it.p)}" cy="${Y(it.p)}" r="${(3.4 * k).toFixed(3)}" fill="var(${col})"/>`;
           if (it.lab) svg += labelAt(it.p, it.lab, it.at, it.s);
           break;
         }
@@ -459,7 +481,8 @@ function renderFig(fig, upto, widthPx, opts = {}) {
       }
     }
   }
-  return `<svg viewBox="${bb.x0.toFixed(2)} ${(-bb.y1).toFixed(2)} ${W.toFixed(2)} ${H.toFixed(2)}" width="100%" style="display:block;max-height:${opts.maxH || 640}px" role="img" font-family="var(--fdraw)"><g>${under.join('')}</g><g>${out.join('')}</g><g>${tools.join('')}</g></svg>`;
+  const sizeAttr = opts.fixed ? `width="${(W * scale).toFixed(1)}" height="${(H * scale).toFixed(1)}" style="display:block;margin:auto"` : `width="100%" style="display:block;max-height:${opts.maxH || 640}px"`;
+  return `<svg viewBox="${bb.x0.toFixed(2)} ${(-bb.y1).toFixed(2)} ${W.toFixed(2)} ${H.toFixed(2)}" ${sizeAttr} role="img" font-family="var(--fdraw)"><g>${under.join('')}</g><g>${out.join('')}</g><g>${tools.join('')}</g></svg>`;
 }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
@@ -1839,98 +1862,100 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     { id: 'lines', name: 'Lines', full: 'Projections of lines' },
     { id: 'planes', name: 'Planes', full: 'Projections of planes' },
     { id: 'solids', name: 'Solids', full: 'Projections of solids' },
-    { id: 'dev', name: 'Develop', full: 'Development of surfaces' },
+    { id: 'dev', name: 'Development', full: 'Development of surfaces' },
     { id: 'iso', name: 'Isometric', full: 'Isometric projections' }];
-  const modName = id => MODS.find(m => m.id === id);
   const $ = id => document.getElementById(id);
-  let curMod = 'points', curQ = null, fig = null, step = 0, timer = null, query = '', hideCon = false;
+  const modOf = id => MODS.find(m => m.id === id);
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
   const cache = new Map();
   const getFig = q => { if (!cache.has(q.id)) cache.set(q.id, deferAngles(q.build())); return cache.get(q.id); };
-  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
-  $('count').textContent = QS.length + ' questions · 6 topics';
-  // module buttons
-  MODS.forEach(m => { const b = document.createElement('button'); b.type = 'button'; b.textContent = m.name; b.dataset.m = m.id; b.addEventListener('click', () => { curMod = m.id; query = ''; $('search').value = ''; renderList(); const first = QS.find(q => q.mod === m.id); openQ(first, true); }); $('mods').appendChild(b); });
-  function visibleQs() {
-    if (query) { const t = query.toLowerCase(); return QS.filter(q => (q.text + ' ' + q.title + ' ' + modName(q.mod).name).toLowerCase().includes(t)); }
-    return QS.filter(q => q.mod === curMod);
-  }
-  function renderList() {
-    document.querySelectorAll('#mods button').forEach(b => b.setAttribute('aria-pressed', String(!query && b.dataset.m === curMod)));
-    const ul = $('qlist'); ul.innerHTML = '';
-    const qs = visibleQs();
-    if (!qs.length) { ul.innerHTML = '<li class="empty">No question matches. Try a shape (hexagon) or an angle (30°).</li>'; }
-    qs.forEach(q => {
-      const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button';
-      b.innerHTML = `<span class="qn">Q${q.num}</span><span>${query ? `<span class="mtag">${modName(q.mod).name}</span>` : ''}${esc(q.title)}</span>`;
-      if (curQ && q.id === curQ.id) b.setAttribute('aria-current', 'true');
-      b.addEventListener('click', () => openQ(q, true)); li.appendChild(b); ul.appendChild(li);
-    });
+  let curQ = null, fig = null, step = 0, timer = null, zoom = 1;
+
+  MODS.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.name + ' (' + QS.filter(q => q.mod === m.id).length + ')'; $('topic').appendChild(o); });
+  function fillQs(mod) {
     const sel = $('qsel'); sel.innerHTML = '';
-    QS.filter(q => q.mod === curMod).forEach(q => { const o = document.createElement('option'); o.value = q.id; o.textContent = `Q${q.num} · ${q.title}`; sel.appendChild(o); });
-    if (curQ && curQ.mod === curMod) sel.value = curQ.id;
+    QS.filter(q => q.mod === mod).forEach(q => { const o = document.createElement('option'); o.value = q.id; o.textContent = 'Q' + q.num + ' · ' + q.title; sel.appendChild(o); });
   }
-  $('qsel').addEventListener('change', e => openQ(QS.find(q => q.id === e.target.value), true));
-  $('search').addEventListener('input', e => { query = e.target.value.trim(); renderList(); });
-  function openQ(q, push) {
+  $('topic').addEventListener('change', e => { fillQs(e.target.value); openQ(QS.find(q => q.mod === e.target.value)); });
+  $('qsel').addEventListener('change', e => openQ(QS.find(q => q.id === e.target.value)));
+  $('qprev').addEventListener('click', () => { const i = QS.indexOf(curQ); if (i > 0) openQ(QS[i - 1]); });
+  $('qnext').addEventListener('click', () => { const i = QS.indexOf(curQ); if (i < QS.length - 1) openQ(QS[i + 1]); });
+  $('qmore').addEventListener('click', () => { const c = $('qcard'); c.classList.toggle('clamp'); $('qmore').textContent = c.classList.contains('clamp') ? 'Show full question' : 'Show less'; });
+
+  const tabs = [['t-steps', 'p-steps'], ['t-ans', 'p-ans'], ['t-key', 'p-key']];
+  tabs.forEach(([t, p]) => $(t).addEventListener('click', () => { tabs.forEach(([t2, p2]) => { $(t2).setAttribute('aria-selected', String(t2 === t)); $(p2).hidden = t2 !== t; }); }));
+
+  function openQ(q) {
     if (!q) return; stop();
-    curQ = q; curMod = q.mod; fig = getFig(q); step = 0;
-    $('eyebrow').textContent = `${modName(q.mod).full} · Q ${q.num}`;
+    curQ = q; fig = getFig(q); step = 0; zoom = baseZoom();
+    if ($('topic').value !== q.mod) { $('topic').value = q.mod; }
+    fillQs(q.mod); $('qsel').value = q.id;
+    const i = QS.indexOf(q); $('qprev').disabled = i === 0; $('qnext').disabled = i === QS.length - 1;
+    $('eyebrow').textContent = modOf(q.mod).full + ' · Q' + q.num;
     $('qtext').textContent = q.text;
-    $('answer').innerHTML = fig.answer || '';
-    $('module').innerHTML = fig.module ? `<div class="module">${fig.module}</div>` : '';
-    $('note').innerHTML = fig.note ? `<div class="note">${fig.note}</div>` : '';
-    const dots = $('dots'); dots.innerHTML = '';
-    fig.steps.forEach((s, i) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Step ' + (i + 1)); b.addEventListener('click', () => { stop(); go(i); }); dots.appendChild(b); });
+    $('qcard').classList.add('clamp'); $('qmore').textContent = 'Show full question';
+    $('answer').innerHTML = fig.answer ? (fig.answer.startsWith('<table') ? fig.answer : '<div class="ansplain">' + fig.answer + '</div>') : '';
+    $('module').innerHTML = fig.module ? '<div class="module">' + fig.module + '</div>' : '';
+    $('note').innerHTML = fig.note ? '<div class="note">' + fig.note + '</div>' : '';
     const ol = $('slol'); ol.innerHTML = '';
-    fig.steps.forEach((s, i) => { const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button'; b.innerHTML = `<span class="n">${i + 1}</span><span>${esc(s.cap)}</span>`; b.addEventListener('click', () => { stop(); go(i); }); li.appendChild(b); ol.appendChild(li); });
-    renderList(); go(0);
+    fig.steps.forEach((s, j) => { const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button'; b.innerHTML = '<span class="n">' + (j + 1) + '</span><span>' + esc(s.cap) + '</span>'; b.addEventListener('click', () => { stop(); go(j); }); li.appendChild(b); ol.appendChild(li); });
     store.set('cage-last', q.id);
-    if (push) { try { history.replaceState(null, '', '#' + q.id); } catch (e) { location.hash = q.id; } }
+    try { history.replaceState(null, '', '#' + q.id); } catch (e) { }
+    go(0);
+  }
+  function baseZoom() {
+    const wrap = $('drawWrap'); const W = Math.max(260, wrap.clientWidth - 28);
+    return W < 560 ? 560 / W : 1;
   }
   function draw() {
-    const w = $('draw').clientWidth || 700;
-    const fin = !!fig.steps[step].final;
-    $('draw').innerHTML = renderFig(fig, step, w, { maxH: Math.max(320, Math.min(700, window.innerHeight * 0.68)), hideCon });
+    const wrap = $('drawWrap');
+    const W = Math.max(260, wrap.clientWidth - 28), H = Math.max(240, wrap.clientHeight - 28);
+    $('draw').innerHTML = renderFig(fig, step, W * zoom, { maxH: H * zoom, fixed: true });
+    $('hintpan').hidden = !(wrap.scrollWidth > wrap.clientWidth + 4 || wrap.scrollHeight > wrap.clientHeight + 4);
   }
   function go(i) {
     step = Math.max(0, Math.min(fig.steps.length - 1, i));
     draw();
-    $('capn').textContent = step + 1;
+    const n = fig.steps.length;
+    $('stepno').textContent = 'Step ' + (step + 1) + ' of ' + n;
+    $('count').textContent = (step + 1) + ' / ' + n;
+    $('barfill').style.width = ((step + 1) / n * 100) + '%';
     $('captxt').textContent = fig.steps[step].cap;
+    $('prev').disabled = step === 0; $('next').disabled = step === n - 1;
     const its = fig.steps[step].items;
-    const hasArc = its.some(i => i.t === 'arc' && i.r > 3), hasAng = its.some(i => i.t === 'angTool' && i.r > 3);
     let th = '';
-    if (hasArc) th += `<div class="tchip"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M11 3L4 20M11 3L18 20M11 3V0.5" stroke="var(--tool)" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="11" cy="3" r="2" fill="var(--tool)"/><path d="M18 20l-1-3" stroke="var(--pencil)" stroke-width="2.4" stroke-linecap="round"/></svg><span><b>Compass</b> — put the needle on the centre point, open the compass to the radius, then swing the pencil to draw the arc.</span></div>`;
-    if (hasAng) th += `<div class="tchip"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M2 17A9 9 0 0 1 20 17Z" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="1.5"/><path d="M11 17L16 9" stroke="var(--pencil)" stroke-width="2" stroke-linecap="round"/></svg><span><b>Protractor</b> — place its centre on the corner point and its base line along XY (or the reference line), make a small mark at the required angle, then join the corner to the mark. (The angle arc and value are added at the end.) (30°, 45° and 60° can also be drawn with set squares.)</span></div>`;
+    if (its.some(it => it.t === 'arc' && it.r > 3)) th += '<div class="tip"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 3L5 21M12 3L19 21" stroke="var(--tool)" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="12" cy="3" r="2" fill="var(--tool)"/><path d="M19 21l-1-3" stroke="var(--pencil)" stroke-width="2.6" stroke-linecap="round"/></svg><span><b>Use a compass.</b> Put the needle on the centre point, open it to the radius, and swing the pencil.</span></div>';
+    if (its.some(it => it.t === 'angTool' && it.r > 3)) th += '<div class="tip"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 19A10 10 0 0 1 22 19Z" fill="var(--toolfill)" stroke="var(--tool)" stroke-width="1.6"/><path d="M12 19L17 10" stroke="var(--pencil)" stroke-width="2.2" stroke-linecap="round"/></svg><span><b>Use a protractor.</b> Centre on the corner, base along XY, mark the angle, then join. (Set squares give 30°, 45° and 60°.)</span></div>';
     $('toolhint').innerHTML = th;
-    $('stepno').textContent = `Step ${step + 1} of ${fig.steps.length}`;
-    $('prev').disabled = step === 0; $('next').disabled = step === fig.steps.length - 1;
-    [...$('dots').children].forEach((d, j) => { d.className = j === step ? 'cur' : j < step ? 'on' : ''; });
     [...$('slol').querySelectorAll('button')].forEach((b, j) => { if (j === step) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); b.classList.toggle('done', j < step); });
   }
   function stop() { if (timer) { clearInterval(timer); timer = null; } $('play').textContent = 'Play'; }
   $('prev').addEventListener('click', () => { stop(); go(step - 1); });
   $('next').addEventListener('click', () => { stop(); go(step + 1); });
   $('all').addEventListener('click', () => { stop(); go(fig.steps.length - 1); });
-  const setSteps = open => { $('steplist').hidden = !open; $('stepsBtn').setAttribute('aria-expanded', String(open)); $('stepsBtn').textContent = open ? 'Hide steps' : 'All steps'; };
-  $('stepsBtn').addEventListener('click', () => setSteps($('steplist').hidden));
-  $('slClose').addEventListener('click', () => { setSteps(false); $('stepsBtn').focus(); });
   $('play').addEventListener('click', () => {
     if (timer) { stop(); return; }
     if (step >= fig.steps.length - 1) go(0);
     $('play').textContent = 'Pause';
-    timer = setInterval(() => { if (step >= fig.steps.length - 1) { stop(); return; } go(step + 1); }, 3200);
+    timer = setInterval(() => { if (step >= fig.steps.length - 1) { stop(); return; } go(step + 1); }, 3500);
   });
+  const setZoom = z => {
+    const wrap = $('drawWrap'), cx = (wrap.scrollLeft + wrap.clientWidth / 2) / Math.max(1, wrap.scrollWidth), cy = (wrap.scrollTop + wrap.clientHeight / 2) / Math.max(1, wrap.scrollHeight);
+    zoom = Math.max(baseZoom() > 1 ? 1 : 1, Math.min(5, z)); draw();
+    wrap.scrollLeft = cx * wrap.scrollWidth - wrap.clientWidth / 2; wrap.scrollTop = cy * wrap.scrollHeight - wrap.clientHeight / 2;
+  };
+  $('zin').addEventListener('click', () => setZoom(zoom * 1.5));
+  $('zout').addEventListener('click', () => setZoom(zoom / 1.5));
+  $('zfit').addEventListener('click', () => setZoom(zoom > 1.01 ? 1 : baseZoom()));
   document.addEventListener('keydown', e => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.target.tagName === 'SELECT') return;
     if (e.key === 'ArrowRight') { stop(); go(step + 1); e.preventDefault(); }
     else if (e.key === 'ArrowLeft') { stop(); go(step - 1); e.preventDefault(); }
-    else if (e.key === 'Home') { stop(); go(0); } else if (e.key === 'End') { stop(); go(fig.steps.length - 1); }
   });
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => fig && draw(), 120); });
-  window.addEventListener('hashchange', () => { const q = QS.find(x => x.id === location.hash.slice(1)); if (q && q !== curQ) openQ(q, false); });
+  window.addEventListener('hashchange', () => { const q = QS.find(x => x.id === location.hash.slice(1)); if (q && q !== curQ) openQ(q); });
   const start = QS.find(x => x.id === location.hash.slice(1)) || QS.find(x => x.id === store.get('cage-last')) || QS[0];
-  curMod = start.mod; openQ(start, false);
+  openQ(start);
 })();
 </script>
 
