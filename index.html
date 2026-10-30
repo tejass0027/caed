@@ -93,6 +93,7 @@ select { appearance: none; -webkit-appearance: none; background: var(--panel) ur
 #draw .tool-p { animation: nw .2s ease-out both }
 @keyframes nw { from { opacity: 0 } to { opacity: 1 } }
 @media (prefers-reduced-motion: reduce) { #draw .nw, #draw .nw.mid, #draw .nw.late { animation: none } }
+.fullbtn, .capbtn { display: none }
 .zoom { position: absolute; right: 12px; top: 12px; display: flex; flex-direction: column; gap: 6px; z-index: 2 }
 .zoom button { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line2); background: var(--paper); cursor: pointer; font-size: 22px; line-height: 1; box-shadow: 0 1px 3px rgba(0,0,0,.12) }
 .zoom button.fit { font-size: 12px; font-weight: 700 }
@@ -205,6 +206,21 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
   .zoom { top: 6px; right: 6px; flex-direction: row }
   .zoom button { width: 38px; height: 38px }
   .hintpan { display: none }
+  .fullbtn, .capbtn { display: block }
+  .capbtn { display: none }
+  body.full .capbtn { display: block }
+  body.full .main { grid-template-columns: minmax(0, 1fr) }
+  body.full .side { display: none }
+  body.full .zoom { z-index: 50 }
+  body.full.showcap .zoom { right: 342px }
+  body.full.showcap .side { display: flex; position: fixed; top: 0; right: 0; bottom: 0; width: 330px; z-index: 40; background: var(--bg) }
+  body.full.showcap .side .ctl { display: none }
+  body.full #drawWrap { padding: 4px 4px 62px }
+  body.full .board .ctl { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 6; border: 1px solid var(--line2); border-radius: 14px; padding: 5px 8px; gap: 8px; flex-wrap: nowrap; opacity: .96; box-shadow: 0 2px 8px rgba(0,0,0,.18) }
+  body.full .board .ctl .big { flex: none; width: 120px; min-height: 44px; font-size: 18px }
+  body.full .board .ctl .mid { flex: none }
+  body.full .board .ctl .mid .small { display: none }
+  body.full .board .ctl .count { font-size: 15px }
 }
 @media (max-width: 560px) {
   .brand { display: none }
@@ -257,6 +273,8 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
       <button id="zin" type="button" aria-label="Zoom in">+</button>
       <button id="zout" type="button" aria-label="Zoom out">−</button>
       <button id="zfit" class="fit" type="button" aria-label="Fit drawing to screen">FIT</button>
+      <button id="fullbtn" class="fullbtn" type="button" aria-label="Full screen drawing">⛶</button>
+      <button id="capbtn" class="capbtn" type="button" aria-label="Show step text">i</button>
     </div>
     <div id="drawWrap"><div id="draw" aria-live="polite"></div></div>
     <div class="hintpan" id="hintpan" hidden>Swipe to move around · FIT shows all</div>
@@ -2161,10 +2179,18 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     const ctl = document.querySelector('.ctl'), board = document.querySelector('.board'), side = document.querySelector('.side');
     const phone = window.matchMedia('(orientation: landscape) and (max-height: 620px)').matches;
     const wide = !phone && window.matchMedia('(min-width: 1000px)').matches;
-    const home = phone ? side : wide ? board : document.body;
+    const home = phone ? (document.body.classList.contains('full') ? board : side) : wide ? board : document.body;
     if (ctl.parentNode !== home) home.appendChild(ctl);
   };
   placeCtl(); window.addEventListener('resize', placeCtl);
+  const setFull = on => {
+    document.body.classList.toggle('full', on); if (!on) document.body.classList.remove('showcap');
+    placeCtl();
+    try { if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => { }); else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => { }); } catch (e) { }
+    setTimeout(() => { window.dispatchEvent(new Event('resize')); const f = document.getElementById('zfit'); if (f) f.click(); }, 160);
+  };
+  document.getElementById('fullbtn').addEventListener('click', () => setFull(!document.body.classList.contains('full')));
+  document.getElementById('capbtn').addEventListener('click', () => document.body.classList.toggle('showcap'));
   document.getElementById('refbtn').addEventListener('click', async () => {
     try { if (navigator.serviceWorker) { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r => r.update().catch(() => { }))); } } catch (e) { }
     location.reload();
