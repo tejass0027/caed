@@ -2182,13 +2182,16 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     const home = phone ? (document.body.classList.contains('full') ? board : side) : wide ? board : document.body;
     if (ctl.parentNode !== home) home.appendChild(ctl);
   };
-  placeCtl(); window.addEventListener('resize', placeCtl);
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
+  const isPhone = () => window.matchMedia('(orientation: landscape) and (max-height: 620px)').matches;
+  const syncFull = () => { const on = isPhone() && store.get('cage.full') !== '0'; document.body.classList.toggle('full', on); if (!on) document.body.classList.remove('showcap'); placeCtl(); };
+  placeCtl(); window.addEventListener('resize', () => { placeCtl(); syncFull(); });
   const setFull = on => {
-    document.body.classList.toggle('full', on); if (!on) document.body.classList.remove('showcap');
-    placeCtl();
+    store.set('cage.full', on ? '1' : '0'); syncFull();
     try { if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => { }); else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => { }); } catch (e) { }
     setTimeout(() => { window.dispatchEvent(new Event('resize')); const f = document.getElementById('zfit'); if (f) f.click(); }, 160);
   };
+  syncFull();
   document.getElementById('fullbtn').addEventListener('click', () => setFull(!document.body.classList.contains('full')));
   document.getElementById('capbtn').addEventListener('click', () => document.body.classList.toggle('showcap'));
   document.getElementById('refbtn').addEventListener('click', async () => {
@@ -2208,7 +2211,6 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
   const MODULES = [1, 2, 3, 4, 5].map(n => ({ n, parts: MODS.filter(x => x.m === n) }));
   const $ = id => document.getElementById(id);
   const modOf = id => MODS.find(m => m.id === id);
-  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
   const cache = new Map();
   const getFig = q => { if (!cache.has(q.id)) cache.set(q.id, deferAngles(q.build())); return cache.get(q.id); };
   let curQ = null, fig = null, step = 0, timer = null, zoom = 1;
