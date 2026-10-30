@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#e4d8bb" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#061528" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#e4d8bb">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CAGE Steps">
@@ -27,7 +27,7 @@
   --fdraw: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
 }
 /* "Blueprint": deep blue board, white and cyan lines, amber highlights */
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+@media (prefers-color-scheme: dark) and (min-width: 99999px) { :root:not([data-theme="light"]) {
   --bg: #061528; --paper: #0a2142; --panel: #0f2d57; --line: #1a3f6e; --line2: #2a5894;
   --ink: #eaf4ff; --muted: #9db9d9; --accent: #ffc94d; --accent-soft: #14386b; --on-accent: #061528;
   --fv: #ff9a76; --tv: #74d0ff; --sv: #d3b8ff; --carry: #5ee6b0; --con: #7f9fc4; --tl: #b9a8ff;
