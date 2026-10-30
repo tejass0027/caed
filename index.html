@@ -165,6 +165,29 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
   .stepcard { order: -1 }
   .ctl .mid .small.opt { display: none }
 }
+
+/* phones held sideways: drawing big on the left, steps on the right */
+@media (orientation: landscape) and (max-height: 620px) {
+  html, body { height: 100%; overflow: hidden }
+  .top { min-height: 46px; padding-top: 4px; padding-bottom: 4px }
+  .brand { display: none }
+  select { min-height: 38px; padding-top: 6px; padding-bottom: 6px }
+  .qnav button { height: 38px }
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; height: auto; flex: 1; min-height: 0 }
+  .qcol { display: none }
+  .board { height: auto; min-height: 0; border-bottom: 0 }
+  #drawWrap { padding: 4px }
+  .side { overflow-y: auto; border-left: 1px solid var(--line); padding: 10px; gap: 10px }
+  .stepcard { padding: 10px 12px }
+  #captxt { font-size: 16px; line-height: 1.4 }
+  .board .ctl { position: static; justify-content: center; gap: 8px; padding-top: 6px; padding-bottom: 6px }
+  .board .ctl .big { flex: none; width: 130px; min-height: 42px; font-size: 16px }
+  .board .ctl .mid .small.opt { display: inline-block }
+  .ctl .small { min-height: 38px; padding: 0 10px; font-size: 14px }
+  .zoom { top: 6px; right: 6px; flex-direction: row }
+  .zoom button { width: 36px; height: 36px }
+  .hintpan { display: none }
+}
 @media (max-width: 560px) {
   .brand { display: none }
   .pick { display: contents }
@@ -2103,7 +2126,7 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
 
 (function () {
   // wide screens: Back / Next sit directly under the drawing; phones: sticky bar at the bottom
-  const placeCtl = () => { const ctl = document.querySelector('.ctl'), board = document.querySelector('.board'); const wide = window.innerWidth >= 1000; if (wide && ctl.parentNode !== board) board.appendChild(ctl); else if (!wide && ctl.parentNode !== document.body) document.body.appendChild(ctl); };
+  const placeCtl = () => { const ctl = document.querySelector('.ctl'), board = document.querySelector('.board'); const wide = window.matchMedia('(min-width: 1000px), (orientation: landscape) and (max-height: 620px)').matches; if (wide && ctl.parentNode !== board) board.appendChild(ctl); else if (!wide && ctl.parentNode !== document.body) document.body.appendChild(ctl); };
   placeCtl(); window.addEventListener('resize', placeCtl);
   const MODS = [
     { id: 'points', m: 1, name: 'Points', full: 'Projections of points' },
