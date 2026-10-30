@@ -199,8 +199,19 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
   #captxt { font-size: 18px }
   .ctl .big { min-height: 52px; font-size: 18px }
 }
+
+/* phones: always sideways — in portrait ask the user to turn the phone */
+.rot { display: none }
+@media (orientation: portrait) and (max-width: 820px) and (pointer: coarse) {
+  .rot { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: var(--bg); color: var(--ink); text-align: center; padding: 24px }
+  .rot svg { animation: rotp 2.4s ease-in-out infinite }
+  .rot b { font-size: 22px }
+  .rot span { font-size: 16px; color: var(--muted); max-width: 300px; line-height: 1.5 }
+}
+@keyframes rotp { 0%, 20% { transform: rotate(0) } 60%, 100% { transform: rotate(-90deg) } }
 </style>
 
+<div class="rot" role="alert"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg><b>Turn your phone sideways</b><span>The drawings are shown best in landscape. Switch on auto-rotate if the screen does not turn.</span></div>
 </head>
 <body>
 <header class="top">
@@ -2128,6 +2139,7 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
   // wide screens: Back / Next sit directly under the drawing; phones: sticky bar at the bottom
   const placeCtl = () => { const ctl = document.querySelector('.ctl'), board = document.querySelector('.board'); const wide = window.matchMedia('(min-width: 1000px), (orientation: landscape) and (max-height: 620px)').matches; if (wide && ctl.parentNode !== board) board.appendChild(ctl); else if (!wide && ctl.parentNode !== document.body) document.body.appendChild(ctl); };
   placeCtl(); window.addEventListener('resize', placeCtl);
+  try { const lk = () => { if (screen.orientation && screen.orientation.lock && window.matchMedia('(pointer: coarse)').matches) screen.orientation.lock('landscape').catch(() => { }); }; document.addEventListener('click', lk, { once: true }); lk(); } catch (e) { }
   const MODS = [
     { id: 'points', m: 1, name: 'Points', full: 'Projections of points' },
     { id: 'lines', m: 1, name: 'Lines', full: 'Projections of lines' },
