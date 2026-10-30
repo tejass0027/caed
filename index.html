@@ -166,26 +166,36 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
   .ctl .mid .small.opt { display: none }
 }
 
-/* phones held sideways: drawing big on the left, steps on the right */
+/* phones held sideways: whole screen for the drawing; steps + buttons in a side panel */
+.menubtn, .closetop { display: none }
 @media (orientation: landscape) and (max-height: 620px) {
   html, body { height: 100%; overflow: hidden }
-  .top { min-height: 46px; padding-top: 4px; padding-bottom: 4px }
-  .brand { display: none }
-  select { min-height: 38px; padding-top: 6px; padding-bottom: 6px }
-  .qnav button { height: 38px }
-  .main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; height: auto; flex: 1; min-height: 0 }
+  body { display: block }
+  .top { display: none }
+  body.topopen .top { display: flex; flex-wrap: wrap; align-content: center; gap: 12px; position: fixed; inset: 0; z-index: 60; background: var(--bg); padding: 16px 24px }
+  body.topopen .pick { display: flex; flex: 1 1 100%; gap: 12px }
+  body.topopen #topic { width: 40% }
+  body.topopen .qnav { display: flex }
+  body.topopen .closetop { display: block; flex: 1 1 100%; min-height: 48px; border-radius: 12px; border: 0; background: var(--accent); color: var(--on-accent); font-size: 18px; font-weight: 700 }
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; height: 100vh; height: 100dvh }
   .qcol { display: none }
   .board { height: auto; min-height: 0; border-bottom: 0 }
-  #drawWrap { padding: 4px }
-  .side { overflow-y: auto; border-left: 1px solid var(--line); padding: 10px; gap: 10px }
-  .stepcard { padding: 10px 12px }
-  #captxt { font-size: 16px; line-height: 1.4 }
-  .board .ctl { position: static; justify-content: center; gap: 8px; padding-top: 6px; padding-bottom: 6px }
-  .board .ctl .big { flex: none; width: 130px; min-height: 42px; font-size: 16px }
-  .board .ctl .mid .small.opt { display: inline-block }
-  .ctl .small { min-height: 38px; padding: 0 10px; font-size: 14px }
+  #drawWrap { padding: 2px }
+  .side { display: flex; flex-direction: column; gap: 10px; padding: 10px 10px 0; overflow-y: auto; border-left: 1px solid var(--line); min-height: 0 }
+  .menubtn { display: block; min-height: 40px; border-radius: 10px; border: 1px solid var(--line2); background: var(--panel); font-size: 16px; font-weight: 700; text-align: left; padding: 0 12px; cursor: pointer; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  .menubtn { order: -2 }
+  .stepcard { order: -1; padding: 12px 14px }
+  .stepno { font-size: 15px }
+  #captxt { font-size: 16.5px; line-height: 1.4 }
+  .bar { margin: 6px 0 8px }
+  .side .ctl { position: sticky; bottom: 0; margin: auto -10px 0; padding: 8px 10px; flex-wrap: wrap; gap: 8px; z-index: 5 }
+  .side .ctl .big { flex: 1 1 45%; max-width: none; min-height: 48px; font-size: 19px }
+  .side .ctl .mid { flex: 1 1 100%; order: 3; justify-content: space-between }
+  .side .ctl .mid .small.opt { display: inline-block }
+  .ctl .small { min-height: 34px; padding: 0 12px; font-size: 14px }
+  .side .ctl { padding-top: 6px; padding-bottom: 6px; gap: 6px }
   .zoom { top: 6px; right: 6px; flex-direction: row }
-  .zoom button { width: 36px; height: 36px }
+  .zoom button { width: 38px; height: 38px }
   .hintpan { display: none }
 }
 @media (max-width: 560px) {
@@ -224,6 +234,7 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
     <button id="qprev" type="button" aria-label="Previous question">‹</button>
     <button id="qnext" type="button" aria-label="Next question">›</button>
   </div>
+  <button class="closetop" id="closetop" type="button">Done – back to the drawing</button>
 </header>
 
 <div class="main">
@@ -244,6 +255,7 @@ table.ans td:last-child { text-align: right; padding-left: 12px; white-space: no
   </section>
 
   <aside class="side">
+    <button id="menubtn" class="menubtn" type="button">☰ Questions</button>
     <div class="qcard clamp" id="qcard">
       <div class="tag" id="eyebrow"></div>
       <p id="qtext"></p>
@@ -2137,8 +2149,16 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
 
 (function () {
   // wide screens: Back / Next sit directly under the drawing; phones: sticky bar at the bottom
-  const placeCtl = () => { const ctl = document.querySelector('.ctl'), board = document.querySelector('.board'); const wide = window.matchMedia('(min-width: 1000px), (orientation: landscape) and (max-height: 620px)').matches; if (wide && ctl.parentNode !== board) board.appendChild(ctl); else if (!wide && ctl.parentNode !== document.body) document.body.appendChild(ctl); };
+  const placeCtl = () => {
+    const ctl = document.querySelector('.ctl'), board = document.querySelector('.board'), side = document.querySelector('.side');
+    const phone = window.matchMedia('(orientation: landscape) and (max-height: 620px)').matches;
+    const wide = !phone && window.matchMedia('(min-width: 1000px)').matches;
+    const home = phone ? side : wide ? board : document.body;
+    if (ctl.parentNode !== home) home.appendChild(ctl);
+  };
   placeCtl(); window.addEventListener('resize', placeCtl);
+  document.getElementById('menubtn').addEventListener('click', () => document.body.classList.add('topopen'));
+  document.getElementById('closetop').addEventListener('click', () => document.body.classList.remove('topopen'));
   try { const lk = () => { if (screen.orientation && screen.orientation.lock && window.matchMedia('(pointer: coarse)').matches) screen.orientation.lock('landscape').catch(() => { }); }; document.addEventListener('click', lk, { once: true }); lk(); } catch (e) { }
   const MODS = [
     { id: 'points', m: 1, name: 'Points', full: 'Projections of points' },
@@ -2179,7 +2199,7 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     const cur = ol.querySelector('[aria-current="true"]'); if (cur) cur.scrollIntoView({ block: 'nearest' });
   }
   $('topic').addEventListener('change', e => { fillQs(e.target.value); openQ(QS.find(q => q.mod === e.target.value)); });
-  $('qsel').addEventListener('change', e => openQ(QS.find(q => q.id === e.target.value)));
+  $('qsel').addEventListener('change', e => { openQ(QS.find(q => q.id === e.target.value)); document.body.classList.remove('topopen'); });
   $('qprev').addEventListener('click', () => { const i = QS.indexOf(curQ); if (i > 0) openQ(QS[i - 1]); });
   $('qnext').addEventListener('click', () => { const i = QS.indexOf(curQ); if (i < QS.length - 1) openQ(QS[i + 1]); });
   $('qmore').addEventListener('click', () => { const c = $('qcard'); c.classList.toggle('clamp'); $('qmore').textContent = c.classList.contains('clamp') ? 'Show full question' : 'Show less'; });
@@ -2195,6 +2215,7 @@ addIso(15, 'Sphere Ø45 on cone frustum Ø60/Ø40 × 60', 'A sphere of diameter 
     const i = QS.indexOf(q); $('qprev').disabled = i === 0; $('qnext').disabled = i === QS.length - 1;
     $('eyebrow').textContent = 'Module ' + modOf(q.mod).m + ' · ' + modOf(q.mod).full + ' · Q' + q.num;
     $('qtext').textContent = q.text;
+    $('menubtn').textContent = '☰  ' + modOf(q.mod).name + ' · Q' + q.num + ' (tap to change)';
     $('qcard').classList.add('clamp'); $('qmore').textContent = 'Show full question';
     $('answer').innerHTML = fig.answer ? (fig.answer.startsWith('<table') ? fig.answer : '<div class="ansplain">' + fig.answer + '</div>') : '';
     $('module').innerHTML = fig.module ? '<div class="module">' + fig.module + '</div>' : '';
