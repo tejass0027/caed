@@ -471,7 +471,7 @@ function renderFig(fig, upto, widthPx, opts = {}) {
           const dir = unit(sub(it.b, it.a)), nrm = [-dir[1], dir[0]], tk = mul(nrm, 2.6 * k);
           const m = mul(add(it.a, it.b), 0.5), tp = add(m, mul(nrm, 11 * k));
           svg = `<path d="M${X(it.a)} ${Y(it.a)}L${X(it.b)} ${Y(it.b)}M${X(sub(it.a, tk))} ${Y(sub(it.a, tk))}L${X(add(it.a, tk))} ${Y(add(it.a, tk))}M${X(sub(it.b, tk))} ${Y(sub(it.b, tk))}L${X(add(it.b, tk))} ${Y(add(it.b, tk))}" stroke="var(--pencil)" stroke-width="${(2.4 * k).toFixed(3)}" stroke-linecap="round" fill="none" opacity="0.9"/>`
-            + `<text x="${X(tp)}" y="${Y(tp)}" text-anchor="middle" dominant-baseline="middle" font-size="${(12.5 * k).toFixed(2)}" font-weight="700" fill="var(--pencil)" stroke="var(--paper)" stroke-width="${(3.2 * k).toFixed(3)}" paint-order="stroke">${it.text}</text>`;
+            + (it.text ? `<text x="${X(tp)}" y="${Y(tp)}" text-anchor="middle" dominant-baseline="middle" font-size="${(12.5 * k).toFixed(2)}" font-weight="700" fill="var(--pencil)" stroke="var(--paper)" stroke-width="${(3.2 * k).toFixed(3)}" paint-order="stroke">${it.text}</text>` : '');
           break;
         }
         case 'l': {
@@ -546,7 +546,7 @@ function renderFig(fig, upto, widthPx, opts = {}) {
     if (isNew && !opts.noTools) {
       const seenR = new Set();
       for (const it of fig.steps[si].items) {
-        if (it.t === 'arc' && it.r > 3) { const rk = Math.round(it.r * 10); tools.push(toolCompass(it, k, X, Y, !seenR.has(rk))); seenR.add(rk); }
+        if (it.t === 'arc' && it.r > 3) { const rk = Math.round(it.r * 10); tools.push(toolCompass(it, k, X, Y, !it.src && !seenR.has(rk))); seenR.add(rk); }
         else if (it.t === 'angTool' && it.r > 3) under.push(toolProtractor(it, k, X, Y));
       }
     }
@@ -584,7 +584,7 @@ function deferAngles(F) {
   // tell the student how far to open the compass in every step that uses it
   for (const st of F.steps) {
     const rs = [];
-    for (const it of st.items) if (it.t === 'arc' && it.r > 3) { const r = it.r; if (!rs.some(q => Math.abs(q - r) < 0.05)) rs.push(r); }
+    for (const it of st.items) if (it.t === 'arc' && it.r > 3 && !it.src) { const r = it.r; if (!rs.some(q => Math.abs(q - r) < 0.05)) rs.push(r); }
     const has = (r, c) => [r.toFixed(1), r.toFixed(2), String(Math.round(r))].some(t => { const x = String(+t).replace('.', '\\.'); return new RegExp('(?<![\\d.])' + x + '(?![\\d])').test(c) && Math.abs(+t - r) < 0.06; });
     const miss = rs.filter(r => !has(r, st.cap));
     if (miss.length) st.cap += (/[.!?)]$/.test(st.cap.trim()) ? ' ' : '. ') + 'Compass opening: ' + (miss.length > 1 ? miss.map(r => +r.toFixed(1) + ' mm').join(', then ') : +miss[0].toFixed(1) + ' mm') + '.';
@@ -1195,7 +1195,7 @@ function lamina(cfg) {
   const far1 = HPm ? st1.reduce((m, p) => p.x < m.x ? p : m) : st1.reduce((m, p) => p.x < m.x ? p : m);
   F.step(`STAGE 2 – Tilt it about the resting ${cfg.rest.edge ? 'edge' : 'corner'} (kept on XY, on the right). Copy the ${V2} line to the right and rotate it: ${tiltWhy} Measure the compass opening FROM THE FIGURE: it is the length of the stage-1 ${V2} line from the pivot to its far end. Put the compass point on the pivot and swing that end up with the arc.`);
   const Lr = Math.max(...st1.map(p => -(p.x - st1.find(q => q.n === (cfg.rest.edge ? cfg.rest.edge[0] : cfg.rest.corner)).x)));
-  { const pv1 = pivotOf(st1), v1 = HPm ? FVp(pv1) : TVp(pv1), far = HPm ? FVp(far1) : TVp(far1); F.Msr(far, v1, f1(Lr) + ' mm'); }
+  { const pv1 = pivotOf(st1), v1 = HPm ? FVp(pv1) : TVp(pv1), far = HPm ? FVp(far1) : TVp(far1); F.Msr(far, v1, ''); }
   if (cfg.tilt.h !== undefined) { F.L([pv2v[0] - Lr - 4, HPm ? cfg.tilt.h : -cfg.tilt.h], [pv2v[0] + 4, HPm ? cfg.tilt.h : -cfg.tilt.h], 'cl'); F.Dim([pv2v[0] + 6, 0], [pv2v[0] + 6, HPm ? cfg.tilt.h : -cfg.tilt.h], String(cfg.tilt.h), 0); }
   { const pv1 = pivotOf(st1), v1 = HPm ? FVp(pv1) : TVp(pv1), far = HPm ? FVp(far1) : TVp(far1); F.Arc(pv2v, Lr, 180, HPm ? 180 - t : 180 + t, 'c', [v1, far]); }
   F.L([pv2v[0] - Lr, 0], pv2v, 'c');
@@ -1244,8 +1244,8 @@ function lamina(cfg) {
     todo.forEach((p, i) => {
       const q2 = v3(st2.find(z => z.n === p.n)), t3 = v3(p);
       const r1 = Math.hypot(q2[0] - A2v[0], q2[1] - A2v[1]), r2 = Math.hypot(q2[0] - B2v[0], q2[1] - B2v[1]);
-      F.step((i === 0 ? `Now copy the stage-2 ${V1} with the compass, corner by corner (the shape does not change, it is only turned). ` : '') + `Corner ${p.n}: measure the distance from ${refN[0]} to ${p.n} in the stage-2 ${V1} (${f1(r1)} mm) and draw an arc from ${refN[0]}; then measure ${refN[1]} to ${p.n} (${f1(r2)} mm) and draw an arc from ${refN[1]}. The arcs cross at ${p.n}.`);
-      F.Msr(A2v, q2, f1(r1) + ' mm'); F.Msr(B2v, q2, f1(r2) + ' mm');
+      F.step((i === 0 ? `Now copy the stage-2 ${V1} with the compass, corner by corner (the shape does not change, it is only turned). ` : '') + `Corner ${p.n}: measure the distance from ${refN[0]} to ${p.n} in the stage-2 ${V1} with the compass and, keeping that opening, draw an arc from ${refN[0]}; then measure ${refN[1]} to ${p.n} the same way and draw an arc from ${refN[1]}. The arcs cross at ${p.n}.`);
+      F.Msr(A2v, q2, ''); F.Msr(B2v, q2, '');
       cutA(vA, t3, r1, [A2v, q2]); cutA(vB, t3, r2, [B2v, q2]);
       F.Lab(t3, HPm ? p.n : P(p.n), awayDir(t3, c3), sty3);
     });
@@ -1398,9 +1398,9 @@ function compassCopy(F, o) {
     seen.push(it);
     const r1 = dist(it.o, o.A.o), r2 = dist(it.o, o.B.o);
     if (r1 < 0.06 || r2 < 0.06) return;
-    F.step((k === 0 ? o.intro + ' ' : '') + `Corner ${it.lab}: set the compass to the distance ${o.A.name}–${it.lab} in the ${o.from} (${f1(r1)} mm) and draw an arc from ${o.A.name}; then set it to ${o.B.name}–${it.lab} (${f1(r2)} mm) and draw an arc from ${o.B.name}. The arcs cross at ${it.lab}.`);
+    F.step((k === 0 ? o.intro + ' ' : '') + `Corner ${it.lab}: measure the distance ${o.A.name}–${it.lab} in the ${o.from} with the compass and, keeping that opening, draw an arc from ${o.A.name}; then measure ${o.B.name}–${it.lab} the same way and draw an arc from ${o.B.name}. The arcs cross at ${it.lab}.`);
     if (k++ === 0) { refLab(o.A); refLab(o.B); }
-    F.Msr(o.A.o, it.o, f1(r1) + ' mm'); F.Msr(o.B.o, it.o, f1(r2) + ' mm');
+    F.Msr(o.A.o, it.o, ''); F.Msr(o.B.o, it.o, '');
     cutA(o.A.p, it.p, r1, [o.A.o, it.o]); cutA(o.B.p, it.p, r2, [o.B.o, it.o]);
     labelIt(it);
   });
@@ -1509,7 +1509,7 @@ function solidFig(cfg) {
     const P1 = pvp(V1), P2 = pvp(V2);
     let iB = M.base[0], dm = -1; M.base.forEach(i => { const d = Math.hypot(FVp(V1[i])[0] - P1[0], FVp(V1[i])[1] - P1[1]); if (d > dm) { dm = d; iB = i; } });
     const B2 = FVp(V2[iB]), Lb = dm, a1 = atan2d(B2[1] - P2[1], B2[0] - P2[0]);
-    F.Msr(FVp(V1[iB]), P1, f1(Lb) + ' mm');
+    F.Msr(FVp(V1[iB]), P1, '');
     F.L([P2[0] - Lb, 0], P2, 'c');
     F.Arc(P2, Lb, 180, a1, 'c', [P1, FVp(V1[iB])]);
     F.L(P2, B2, 'fv');
