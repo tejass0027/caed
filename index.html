@@ -987,7 +987,7 @@ function construct1(F, cfg, st1, view, HPm, s1cap, finish) {
   const Dd = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
   const num = x => +x.toFixed(1);
   const cen = centroid2(st1.filter(p => p.n).map(p => view(p)));
-  const lab = (...ns) => ns.forEach(n => F.Lab(V[n], nm(n), awayDir(V[n], cen), sty));
+  const lab = (...ns) => ns.forEach(n => F.Lab(V[n], (cfg.labelMap && cfg.labelMap[n]) || nm(n), awayDir(V[n], cen), sty));
   const cut = (c, t, r) => { const a = ang(c, t); F.Arc(c, r ?? Dd(c, t), a - 14, a + 14, 'c'); };
   const circle = (c, r) => F.Arc(c, r, 0, 359.5, 'c');
   const equi = k === 3 && Math.abs(Dd(V.a, V.b) - Dd(V.b, V.c)) < 0.05 && Math.abs(Dd(V.a, V.b) - Dd(V.a, V.c)) < 0.05;
@@ -1162,8 +1162,8 @@ function lamina(cfg) {
     if (thin) {
       let dmax = -1;
       for (let i = 0; i < pp.length; i++) for (let j = i + 1; j < pp.length; j++) { const d = Math.hypot(pp[i][0] - pp[j][0], pp[i][1] - pp[j][1]); if (d > dmax) { dmax = d; i0 = i; i1 = j; } }
-      F.L(pp[i0], pp[i1], style);
-    } else F.PL(pp, style, true);
+      if (labels !== 'lab') F.L(pp[i0], pp[i1], style);
+    } else if (labels !== 'lab') F.PL(pp, style, true);
     if (!labels) return;
     const isF = view === FVp;
     const list = named(arr).map(p => ({ p: view(p), lab: isF ? P(p.n) : p.n, depth: isF ? p.y : p.z }));
@@ -1183,7 +1183,7 @@ function lamina(cfg) {
   const s1cap = HPm
     ? `STAGE 1 – Assume the ${name} lies FLAT on HP. Its top view is the TRUE SHAPE: draw ${cfg.desc}, with the resting ${cfg.rest.edge ? 'edge ' + cfg.rest.edge.join('') + ' perpendicular to XY' : 'corner ' + cfg.rest.corner} on the RIGHT.`
     : `STAGE 1 – Assume the ${name} lies IN (parallel to) VP. Its front view is the TRUE SHAPE: draw ${cfg.desc}, with the resting ${cfg.rest.edge ? 'edge ' + cfg.rest.edge.join('') + ' vertical' : 'corner ' + cfg.rest.corner} on the RIGHT.`;
-  if (!construct1(F, cfg, st1, HPm ? TVp : FVp, HPm, s1cap, () => drawView(st1, HPm ? TVp : FVp, HPm ? 'tv' : 'fv'))) { F.step(s1cap); drawView(st1, HPm ? TVp : FVp, HPm ? 'tv' : 'fv'); }
+  if (!construct1(F, cfg, st1, HPm ? TVp : FVp, HPm, s1cap, () => drawView(st1, HPm ? TVp : FVp, HPm ? 'tv' : 'fv', false))) { F.step(s1cap); drawView(st1, HPm ? TVp : FVp, HPm ? 'tv' : 'fv'); }
   if (cfg.s1dims) cfg.s1dims(F, st1, HPm ? TVp : FVp);
   F.step(HPm ? 'Project every corner up to XY. Lying flat on HP, the whole lamina’s front view is a single LINE on XY.' : 'Project every corner down to XY. Lying in VP, the lamina’s top view is a single LINE on XY.');
   for (const p of named(st1)) F.L(HPm ? TVp(p) : FVp(p), [p.x, 0], 'p');
@@ -1207,8 +1207,9 @@ function lamina(cfg) {
     F.L(HPm ? TVp(p1) : FVp(p1), HPm ? TVp(p) : FVp(p), 'g');
     F.L(HPm ? FVp(p) : TVp(p), HPm ? TVp(p) : FVp(p), 'p');
   }
+  drawView(st2, HPm ? TVp : FVp, HPm ? 'tv' : 'fv', 'lab');
   F.step(`Where each projector meets its horizontal line is the new corner. Join them: the stage-2 ${V1} is ${HPm ? 'narrower' : 'narrower'} than the true shape because the ${name} is tilted.`);
-  drawView(st2, HPm ? TVp : FVp, HPm ? 'tv' : 'fv');
+  drawView(st2, HPm ? TVp : FVp, HPm ? 'tv' : 'fv', false);
   // stage 3
   const A3 = ptBy(st3, s3.ref[0]), B3 = ptBy(st3, s3.ref[1]);
   const vA = HPm ? TVp(A3) : FVp(A3), vB = HPm ? TVp(B3) : FVp(B3);
@@ -1220,6 +1221,7 @@ function lamina(cfg) {
   if (s3.touch) cap3 += HPm ? `Place it so that ${Array.isArray(s3.touch) ? 'side ' + s3.touch.join('').toUpperCase() : 'corner ' + s3.touch.toUpperCase()} lies ON XY (touching VP). ` : '';
   cap3 += `Draw that line first.`;
   F.step(cap3).L(vA, vB, HPm ? 'tv' : 'fv');
+  { const c3 = centroid2(named(st3).map(z => (HPm ? TVp : FVp)(z))); s3.ref.forEach((r, i) => { if (typeof r === 'string') { const pt = i ? vB : vA; F.Lab(pt, HPm ? r : P(r), awayDir(pt, c3), HPm ? 'tv' : 'fv'); } }); }
   // angle mark at the endpoint nearer XY / pivot
   {
     let a = angLine; let c = vA;
@@ -1248,7 +1250,7 @@ function lamina(cfg) {
       F.Lab(t3, HPm ? p.n : P(p.n), awayDir(t3, c3), sty3);
     });
     F.step(`Join the corners in order. The stage-3 ${V1} is an exact copy of the stage-2 ${V1}, only turned.`);
-    drawView(st3, v3, sty3);
+    drawView(st3, v3, sty3, false);
   }
   F.step(`Project every corner ${HPm ? 'up' : 'down'}, and draw horizontal lines from the stage-2 ${V2} (${HPm ? 'heights above HP' : 'distances from VP'} do not change when the ${name} is turned).`);
   for (const p of named(st3)) {
@@ -1256,8 +1258,9 @@ function lamina(cfg) {
     F.L(HPm ? TVp(p) : FVp(p), HPm ? FVp(p) : TVp(p), 'p');
     F.L(HPm ? FVp(p2) : TVp(p2), HPm ? FVp(p) : TVp(p), 'g');
   }
+  drawView(st3, HPm ? FVp : TVp, HPm ? 'fv' : 'tv', 'lab');
   F.step(`Where each projector meets its horizontal is the final ${V2} corner. Join them. The stage-3 views are the REQUIRED PROJECTIONS.`);
-  drawView(st3, HPm ? FVp : TVp, HPm ? 'fv' : 'tv');
+  drawView(st3, HPm ? FVp : TVp, HPm ? 'fv' : 'tv', false);
   F._st = { st1, st2, st3, t, target, cfg };
   return F;
 }
@@ -1383,6 +1386,11 @@ function compassCopy(F, o) {
   const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.06;
   const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
   const cutA = (c, t, r, src) => { const a = atan2d(t[1] - c[1], t[0] - c[0]); F.Arc(c, r, a - 14, a + 14, 'c', src); };
+  const groups = clusterLabels(o.items.map(i => ({ p: i.p, lab: i.lab, depth: i.depth })), 0.8);
+  const grpOf = it => groups.find(g => g.members.some(m => m.lab === it.lab && near(m.p, it.p)));
+  const done = new Set();
+  const labelIt = it => { const g = grpOf(it); if (g && !done.has(g)) { done.add(g); F.Lab(g.p, g.lab, awayDir(g.p, o.cen), o.sty); } };
+  const refLab = R => { const m = o.items.find(i => near(i.p, R.p)); if (m) labelIt(m); else F.Lab(R.p, R.name, awayDir(R.p, o.cen), o.sty); };
   const seen = []; let k = 0;
   o.items.forEach(it => {
     if (near(it.p, o.A.p) || near(it.p, o.B.p)) return;
@@ -1390,10 +1398,11 @@ function compassCopy(F, o) {
     seen.push(it);
     const r1 = dist(it.o, o.A.o), r2 = dist(it.o, o.B.o);
     if (r1 < 0.06 || r2 < 0.06) return;
-    F.step((k++ === 0 ? o.intro + ' ' : '') + `Corner ${it.lab}: set the compass to the distance ${o.A.name}–${it.lab} in the ${o.from} (${f1(r1)} mm) and draw an arc from ${o.A.name}; then set it to ${o.B.name}–${it.lab} (${f1(r2)} mm) and draw an arc from ${o.B.name}. The arcs cross at ${it.lab}.`);
+    F.step((k === 0 ? o.intro + ' ' : '') + `Corner ${it.lab}: set the compass to the distance ${o.A.name}–${it.lab} in the ${o.from} (${f1(r1)} mm) and draw an arc from ${o.A.name}; then set it to ${o.B.name}–${it.lab} (${f1(r2)} mm) and draw an arc from ${o.B.name}. The arcs cross at ${it.lab}.`);
+    if (k++ === 0) { refLab(o.A); refLab(o.B); }
     F.Msr(o.A.o, it.o, f1(r1) + ' mm'); F.Msr(o.B.o, it.o, f1(r2) + ' mm');
     cutA(o.A.p, it.p, r1, [o.A.o, it.o]); cutA(o.B.p, it.p, r2, [o.B.o, it.o]);
-    F.Lab(it.p, it.lab, awayDir(it.p, o.cen), o.sty);
+    labelIt(it);
   });
 }
 
@@ -1460,7 +1469,7 @@ function solidFig(cfg) {
   let [m3, M3] = span(V3); const o3 = M2 + o2 + G + 4 - m3; V3 = sx(V3, o3); A3 = sx(A3, o3);
   const xEnd = M3 + o3 + 10;
   const FVp = p => [p.x, p.z], TVp = p => [p.x, -p.y];
-  const drawSolid = (V, A, view, isF) => {
+  const drawSolid = (V, A, view, isF, mode, skip) => {
     const N = faceNormals(M, V);
     const vis = N.map(nn => (isF ? nn[1] : nn[2]) > 1e-6);
     const st = isF ? 'fv' : 'tv', sth = isF ? 'fvh' : 'tvh';
@@ -1470,22 +1479,24 @@ function solidFig(cfg) {
       if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.05) continue;
       if (e.f.some(fi => vis[fi])) shown.push([a, b]); else hid.push([a, b]);
     }
-    hid.forEach(([a, b]) => F.L(a, b, sth));
-    shown.forEach(([a, b]) => F.L(a, b, st));
+    if (mode !== 'lab') { hid.forEach(([a, b]) => F.L(a, b, sth));
+    shown.forEach(([a, b]) => F.L(a, b, st)); }
     // axis
     const pa = view(A[0]), pb = view(A[1]);
-    if (Math.hypot(pa[0] - pb[0], pa[1] - pb[1]) > 0.5) { const d = unit(sub(pb, pa)); F.L(sub(pa, mul(d, 4)), add(pb, mul(d, 4)), 'ax'); }
+    if (mode !== 'lab' && Math.hypot(pa[0] - pb[0], pa[1] - pb[1]) > 0.5) { const d = unit(sub(pb, pa)); F.L(sub(pa, mul(d, 4)), add(pb, mul(d, 4)), 'ax'); }
     // labels
-    const all = V.map(p => ({ p: view(p), lab: isF ? P(p.n) : p.n, depth: isF ? p.y : p.z }));
+    if (mode === 'shape') return;
+    const all = V.map(p => ({ p: view(p), lab: isF ? P(p.n) : p.n, depth: isF ? p.y : p.z, n: p.n }));
     const cen = centroid2(V.map(view));
     const groups = clusterLabels(all, 0.8);
-    for (const g of groups) F.Lab(g.p, g.lab, awayDir(g.p, cen), st);
+    for (const g of groups) { if (skip && g.members.every(m => skip.has(m.n))) continue; F.Lab(g.p, g.lab, awayDir(g.p, cen), st); }
   };
   const solidName = cfg.name;
   F.step(`Read the question: the axis is inclined to ${cfg.ref === 'edge' || cfg.rest.startsWith('slant') ? 'HP (and the solid is turned in plan)' : 'both HP and VP'}, so the ${solidName} is drawn in THREE stages. Draw XY.`).XY(-34, xEnd, 'VP', 'HP');
   const restDesc = cfg.rest === 'edge' || cfg.rest === 'slantFace' ? `a base edge (${restName}) perpendicular to XY on the RIGHT` : `a base corner (${restName}) on the RIGHT, with the two base edges through it symmetric about a horizontal line (equal inclinations)`;
+  const lm1 = {}, skip1 = new Set(M.base.map(i => V1[i].n)); if (cfg.kind === 'prism') M.base.forEach((bi, i) => { lm1[V1[bi].n] = V1[M.top[i]].n + '(' + V1[bi].n + ')'; skip1.add(V1[M.top[i]].n); });
   const s1txt = `STAGE 1 – Assume the ${solidName} stands on its base on HP with the axis vertical. The top view shows the base as its TRUE SHAPE: draw ${cfg.baseDesc} with ${restDesc}.${cfg.kind === 'pyramid' ? ' Join the corners to the centre o (the apex seen from above).' : ''}`;
-  if (!construct1(F, { rest: restEdge ? { edge: [V1[restEdge[0]].n, V1[restEdge[1]].n] } : { corner: V1[M.base[0]].n } }, M.base.map(i => V1[i]), TVp, true, s1txt, () => drawSolid(V1, A1, TVp, false))) { F.step(s1txt); drawSolid(V1, A1, TVp, false); }
+  if (!construct1(F, { rest: restEdge ? { edge: [V1[restEdge[0]].n, V1[restEdge[1]].n] } : { corner: V1[M.base[0]].n }, labelMap: lm1 }, M.base.map(i => V1[i]), TVp, true, s1txt, () => drawSolid(V1, A1, TVp, false, 'full', skip1))) { F.step(s1txt); drawSolid(V1, A1, TVp, false); }
   F.step(`Project the corners up and draw the stage-1 front view: ${cfg.kind === 'prism' ? `a rectangle ${cfg.H} mm high (the axis length)` : `the apex o′ ${cfg.H} mm above XY, joined to the base corners`}.`);
   for (const p of V1) if (p.z === 0) F.L(TVp(p), [p.x, 0], 'p');
   drawSolid(V1, A1, FVp, true);
@@ -1504,10 +1515,10 @@ function solidFig(cfg) {
     F.L(P2, B2, 'fv');
     if (t <= 90.5) F.Ang(P2, 13, 180 - t, 180, f1(t) + '°', { tr: 7 }); else F.Ang(P2, 13, a1, 180, f1(180 - t) + '°', { tr: 7, noTool: true });
     const nmB = P(V1[iB].n);
-    compassCopy(F, { items: V1.map((p, i) => ({ lab: P(p.n), o: FVp(p), p: FVp(V2[i]) })), A: { o: P1, p: P2, name: 'the pivot' }, B: { o: FVp(V1[iB]), p: B2, name: nmB }, sty: 'fv', cen: centroid2(V2.map(FVp)), intro: 'Now copy the rest of the front view with the compass, corner by corner (the solid keeps its shape; only its position changes).', from: 'stage-1 front view' });
+    compassCopy(F, { items: V1.map((p, i) => ({ lab: P(p.n), o: FVp(p), p: FVp(V2[i]), depth: V2[i].y })), A: { o: P1, p: P2, name: 'the pivot' }, B: { o: FVp(V1[iB]), p: B2, name: nmB }, sty: 'fv', cen: centroid2(V2.map(FVp)), intro: 'Now copy the rest of the front view with the compass, corner by corner (the solid keeps its shape; only its position changes).', from: 'stage-1 front view' });
     F.step(`Join the corners to get the stage-2 front view (hidden edges dashed).`);
   }
-  drawSolid(V2, A2, FVp, true);
+  drawSolid(V2, A2, FVp, true, 'shape');
   {
     // angle mark: axis with XY
     const pa = FVp(A2[0]), pb = FVp(A2[1]);
@@ -1523,8 +1534,9 @@ function solidFig(cfg) {
   }
   F.step(`Draw horizontal lines from every corner of the stage-1 top view (distances from VP do not change while tilting), and drop projectors from the new front-view corners.`);
   V2.forEach((p, i) => { F.L(TVp(V1[i]), TVp(p), 'g'); F.L(FVp(p), TVp(p), 'p'); });
+  drawSolid(V2, A2, TVp, false, 'lab');
   F.step(`Where each projector meets its horizontal line is the new top-view corner. Join them. Edges hidden behind faces are drawn DASHED (when viewed from above, the faces turned downwards are hidden).`);
-  drawSolid(V2, A2, TVp, false);
+  drawSolid(V2, A2, TVp, false, 'shape');
   // stage 3
   let cap3 = `STAGE 3 – Turn the ${solidName} (keeping its tilt) so that ${refWhat} makes ${f1(target)}° with XY in the top view. `;
   if (cfg.ref === 'edge') cap3 += `The resting edge lies on HP, so its top view shows the TRUE angle with VP. `;
@@ -1547,14 +1559,15 @@ function solidFig(cfg) {
   {
     const oA = cfg.ref === 'edge' ? TVp(V2[restEdge[0]]) : TVp(A2[0]), oB = cfg.ref === 'edge' ? TVp(V2[restEdge[1]]) : TVp(A2[1]);
     const nA = cfg.ref === 'edge' ? V3[restEdge[0]].n : 'o1', nB = cfg.ref === 'edge' ? V3[restEdge[1]].n : 'o';
-    compassCopy(F, { items: V3.map((p, i) => ({ lab: p.n, o: TVp(V2[i]), p: TVp(p) })), A: { o: oA, p: TVp(rA), name: nA }, B: { o: oB, p: TVp(rB), name: nB }, sty: 'tv', cen: centroid2(V3.map(TVp)), intro: 'Now copy the stage-2 top view with the compass, corner by corner (it keeps the same shape; it is only turned).', from: 'stage-2 top view' });
+    compassCopy(F, { items: V3.map((p, i) => ({ lab: p.n, o: TVp(V2[i]), p: TVp(p), depth: p.z })), A: { o: oA, p: TVp(rA), name: nA }, B: { o: oB, p: TVp(rB), name: nB }, sty: 'tv', cen: centroid2(V3.map(TVp)), intro: 'Now copy the stage-2 top view with the compass, corner by corner (it keeps the same shape; it is only turned).', from: 'stage-2 top view' });
     F.step(`Join the corners: the stage-3 top view is an exact copy of the stage-2 top view, turned to this position. Keep the same visible and hidden edges.`);
   }
-  drawSolid(V3, A3, TVp, false);
+  drawSolid(V3, A3, TVp, false, 'shape');
   F.step(`Project every corner up, and draw horizontal lines from the stage-2 front view (heights above HP do not change when the ${solidName} is turned).`);
   V3.forEach((p, i) => { F.L(TVp(p), FVp(p), 'p'); F.L(FVp(V2[i]), FVp(p), 'g'); });
+  drawSolid(V3, A3, FVp, true, 'lab');
   F.step(`Where each projector meets its horizontal is the final front-view corner. Join them, showing hidden edges dashed. Stage 3 gives the REQUIRED front and top views.`);
-  drawSolid(V3, A3, FVp, true);
+  drawSolid(V3, A3, FVp, true, 'shape');
   F.answer = answerTable([['Axis to HP', f1(cfg.rest === 'edge' || cfg.rest === 'corner' ? cfg.axisHP : atan2d(Math.abs(A2[1].z - A2[0].z), hyp(A2[1].x - A2[0].x, A2[1].y - A2[0].y))) + '°'], ['Angle drawn in the stage-3 top view', f1(target) + '°']]);
   F._S = { V1, V2, V3, A2, A3, restEdge, M, cfg, target, t };
   return F;
