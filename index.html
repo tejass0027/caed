@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#efe7d6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CAGE Steps">
@@ -17,25 +17,29 @@
 <style>
 /* Layout: one screen like a drawing board — big drawing on the left, the step you are on (and its answer) on the right; on phones the drawing sits on top and Back / Next stay pinned at the bottom. */
 :root {
-  --bg: #eef1f4; --paper: #ffffff; --panel: #f6f8fa; --line: #d6dde3; --line2: #b9c4cd;
-  --ink: #111a22; --muted: #4f5f6c; --accent: #1554a0; --accent-soft: #e3edf8; --on-accent: #ffffff;
-  --fv: #c23a1e; --tv: #1554a0; --sv: #6b3fb0; --carry: #12825f; --con: #75828e; --tl: #5b45c9;
-  --dim: #34505f; --angc: #9a5200; --cut: #b0256d; --halo: transparent;
-  --tool: #4d5c69; --toolfill: rgba(80, 130, 190, .14); --pencil: #e09a12; --warn: #8f4b00;
+  /* "Drafting paper": warm cream sheet, deep-ink text, teal accent */
+  --bg: #efe7d6; --paper: #fffdf6; --panel: #f7f0df; --line: #e0d5bb; --line2: #c9ba97;
+  --ink: #1a1f2b; --muted: #5a5648; --accent: #0f766e; --accent-soft: #d8efe9; --on-accent: #ffffff;
+  --fv: #c8321f; --tv: #1a4fa0; --sv: #7a3fb8; --carry: #0f7a55; --con: #7d776a; --tl: #5b45c9;
+  --dim: #3c4a55; --angc: #a15a00; --cut: #b0256d; --halo: transparent; --grid: rgba(26, 31, 43, .055);
+  --tool: #55606b; --toolfill: rgba(70, 120, 170, .14); --pencil: #e08a00; --warn: #8f4b00;
   --font: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
   --fdraw: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
 }
+/* "Blueprint": deep blue board, white and cyan lines, amber highlights */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0d1217; --paper: #151c23; --panel: #1b232c; --line: #2a3540; --line2: #3a4753;
-  --ink: #edf2f6; --muted: #a6b4c0; --accent: #7fb2ee; --accent-soft: #1d2d40; --on-accent: #0d1217;
-  --fv: #ff8a6a; --tv: #7fb2ee; --sv: #c2a1f2; --carry: #4fd0a2; --con: #8494a2; --tl: #ad9ff7;
-  --dim: #b4c8d4; --angc: #f0b264; --cut: #f07ab6; --tool: #b4c2cd; --toolfill: rgba(140, 180, 220, .14); --pencil: #f5c44f; --warn: #f0b264;
+  --bg: #061528; --paper: #0a2142; --panel: #0f2d57; --line: #1a3f6e; --line2: #2a5894;
+  --ink: #eaf4ff; --muted: #9db9d9; --accent: #ffc94d; --accent-soft: #14386b; --on-accent: #061528;
+  --fv: #ff9a76; --tv: #74d0ff; --sv: #d3b8ff; --carry: #5ee6b0; --con: #7f9fc4; --tl: #b9a8ff;
+  --dim: #cfe3f7; --angc: #ffcf70; --cut: #ff8fc4; --grid: rgba(150, 200, 255, .07);
+  --tool: #cfe3f7; --toolfill: rgba(140, 190, 240, .16); --pencil: #ffc94d; --warn: #ffcf70;
   color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #0d1217; --paper: #151c23; --panel: #1b232c; --line: #2a3540; --line2: #3a4753;
-  --ink: #edf2f6; --muted: #a6b4c0; --accent: #7fb2ee; --accent-soft: #1d2d40; --on-accent: #0d1217;
-  --fv: #ff8a6a; --tv: #7fb2ee; --sv: #c2a1f2; --carry: #4fd0a2; --con: #8494a2; --tl: #ad9ff7;
-  --dim: #b4c8d4; --angc: #f0b264; --cut: #f07ab6; --tool: #b4c2cd; --toolfill: rgba(140, 180, 220, .14); --pencil: #f5c44f; --warn: #f0b264;
+  --bg: #061528; --paper: #0a2142; --panel: #0f2d57; --line: #1a3f6e; --line2: #2a5894;
+  --ink: #eaf4ff; --muted: #9db9d9; --accent: #ffc94d; --accent-soft: #14386b; --on-accent: #061528;
+  --fv: #ff9a76; --tv: #74d0ff; --sv: #d3b8ff; --carry: #5ee6b0; --con: #7f9fc4; --tl: #b9a8ff;
+  --dim: #cfe3f7; --angc: #ffcf70; --cut: #ff8fc4; --grid: rgba(150, 200, 255, .07);
+  --tool: #cfe3f7; --toolfill: rgba(140, 190, 240, .16); --pencil: #ffc94d; --warn: #ffcf70;
   color-scheme: dark }
 * { box-sizing: border-box }
 html, body { height: 100% }
@@ -47,7 +51,8 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--accent); o
 /* top bar */
 .top { flex: none; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--paper); border-bottom: 1px solid var(--line);
   padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
-.brand { font-weight: 700; font-size: 19px; white-space: nowrap; margin-right: 6px }
+.brand { font-weight: 700; font-size: 19px; white-space: nowrap; margin-right: 6px; letter-spacing: .02em }
+.brand::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border: 2.5px solid var(--accent); border-radius: 50%; box-shadow: 8px 8px 0 -2px var(--accent) }
 .pick { display: flex; gap: 8px; flex: 1; min-width: 0 }
 select { appearance: none; -webkit-appearance: none; background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23778899' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center;
   border: 1px solid var(--line2); border-radius: 10px; padding: 10px 36px 10px 12px; min-height: 46px; min-width: 0; cursor: pointer }
@@ -79,7 +84,7 @@ select { appearance: none; -webkit-appearance: none; background: var(--panel) ur
 .qlist button[aria-current="true"] { border: 2px solid var(--accent); background: var(--accent-soft) }
 .qlist button[aria-current="true"] .full { color: var(--ink); font-size: 16px }
 .board { position: relative; min-width: 0; min-height: 0; background: var(--paper); display: flex; flex-direction: column }
-#drawWrap { flex: 1; min-height: 0; overflow: auto; padding: 14px; display: flex; touch-action: pan-x pan-y }
+#drawWrap { background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; flex: 1; min-height: 0; overflow: auto; padding: 14px; display: flex; touch-action: pan-x pan-y }
 #draw { margin: auto }
 #draw .nw { animation: nw .45s ease-out }
 #draw .nw.mid { animation: nw .3s ease-out .35s both }
